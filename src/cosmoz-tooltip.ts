@@ -25,7 +25,7 @@ const style = css`
 		position: fixed;
 		position-anchor: var(--tooltip-anchor-name, --tooltip-anchor);
 		inset: unset;
-		margin: var(--tooltip-spacing, 0.5rem);
+		margin: calc(var(--cz-spacing) * 2);
 		position-try-fallbacks:
 			flip-block,
 			flip-inline,
@@ -33,13 +33,15 @@ const style = css`
 
 		/* Reset popover defaults */
 		border: none;
-		padding: 0.5rem 0.75rem;
-		background: var(--tooltip-bg, #1f2937);
-		color: var(--tooltip-color, #fff);
-		border-radius: var(--tooltip-radius, 0.375rem);
-		font-size: var(--tooltip-font-size, 0.875rem);
-		max-width: var(--tooltip-max-width, 20rem);
-		box-shadow: var(--tooltip-shadow, 0 4px 6px -1px rgb(0 0 0 / 0.1));
+		padding: calc(var(--cz-spacing) * 2) calc(var(--cz-spacing) * 3);
+		background: var(--cz-color-gray-900);
+		color: var(--cz-color-white);
+		border-radius: var(--cz-radius-sm);
+		font-family: var(--cz-font-body);
+		font-size: var(--cz-text-sm);
+		line-height: var(--cz-text-sm-line-height);
+		max-width: 20rem;
+		box-shadow: var(--cz-shadow-lg);
 
 		/* Animation - open state */
 		opacity: 1;
@@ -65,17 +67,17 @@ const style = css`
 	}
 
 	.title {
-		font-weight: 600;
+		font-weight: var(--cz-font-weight-semibold);
 		display: block;
 	}
 
 	.description {
 		margin: 0;
-		opacity: 0.9;
+		color: var(--cz-color-gray-300);
 	}
 
 	.title + .description {
-		margin-top: 0.25rem;
+		margin-top: var(--cz-spacing);
 	}
 
 	@media (prefers-reduced-motion: reduce) {

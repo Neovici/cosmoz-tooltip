@@ -59,6 +59,7 @@
     "./cosmoz-tooltip": "./dist/cosmoz-tooltip.js"
   },
   "dependencies": {
+    "@neovici/cosmoz-tokens": "^3.2.1",
     "@pionjs/pion": "^2.5.2",
     "lit-html": "^3.3.1"
   },

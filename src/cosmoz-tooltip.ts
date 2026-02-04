@@ -6,6 +6,7 @@ import { ref } from 'lit-html/directives/ref.js';
 declare global {
 	interface CSSStyleDeclaration {
 		anchorName: string;
+		positionAnchor: string;
 	}
 }
 
@@ -23,7 +24,7 @@ const style = css`
 
 	[popover] {
 		position: fixed;
-		position-anchor: var(--tooltip-anchor-name, --tooltip-anchor);
+		position-anchor: --tooltip-anchor;
 		inset: unset;
 		margin: calc(var(--cz-spacing) * 2);
 		position-try-fallbacks:
@@ -126,7 +127,7 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 		return root?.querySelector(`[name="${forAttr}"]`);
 	}, [forAttr, host]);
 
-	// Setup event listeners for for="" target
+	// Setup event listeners and CSS anchor for for="" target
 	useEffect(() => {
 		if (!forAttr) return;
 
@@ -135,6 +136,11 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 
 		// Set anchor name on target element
 		(target as HTMLElement).style.anchorName = '--tooltip-anchor-external';
+
+		// Set position-anchor on popover to reference the target element
+		if (popover.current) {
+			popover.current.style.positionAnchor = '--tooltip-anchor-external';
+		}
 
 		target.addEventListener('mouseenter', show);
 		target.addEventListener('mouseleave', hide);
@@ -147,12 +153,13 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 			target.removeEventListener('focusin', show);
 			target.removeEventListener('focusout', hide);
 			(target as HTMLElement).style.anchorName = '';
+			if (popover.current) {
+				popover.current.style.positionAnchor = '';
+			}
 		};
 	}, [forAttr, findTarget, show, hide]);
 
-	const anchorStyle = forAttr
-		? `position-area: ${placement}; --tooltip-anchor-name: --tooltip-anchor-external;`
-		: `position-area: ${placement};`;
+	const anchorStyle = `position-area: ${placement};`;
 
 	return html`
 		${!forAttr

@@ -88,20 +88,21 @@ const style = css`
 `;
 
 interface TooltipProps {
-	title?: string;
+	heading?: string;
 	description?: string;
 	for?: string;
 	placement?: string;
 	delay?: number;
 }
 
-const CosmozTooltip = ({
-	title,
-	description,
-	for: forAttr,
-	placement = 'top',
-	delay = 300,
-}: TooltipProps) => {
+const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
+	const {
+		heading,
+		description,
+		for: forAttr,
+		placement = 'top',
+		delay = 300,
+	} = host;
 	const popover = useRef<HTMLElement>();
 	const timeoutId = useRef<number>();
 
@@ -118,11 +119,12 @@ const CosmozTooltip = ({
 	}, []);
 
 	// Find target element when using for="" attribute
+	// Search from host's root node (document or parent shadow root)
 	const findTarget = useCallback((): Element | null => {
 		if (!forAttr) return null;
-		const root = popover.current?.getRootNode() as ShadowRoot | Document;
+		const root = host.getRootNode() as ShadowRoot | Document;
 		return root?.querySelector(`[name="${forAttr}"]`);
-	}, [forAttr]);
+	}, [forAttr, host]);
 
 	// Setup event listeners for for="" target
 	useEffect(() => {
@@ -171,7 +173,7 @@ const CosmozTooltip = ({
 				popover.current = el as HTMLElement | undefined;
 			})}
 		>
-			${title ? html`<strong class="title">${title}</strong>` : nothing}
+			${heading ? html`<strong class="title">${heading}</strong>` : nothing}
 			${description ? html`<p class="description">${description}</p>` : nothing}
 			<slot name="content"></slot>
 		</div>
@@ -182,7 +184,7 @@ customElements.define(
 	'cosmoz-tooltip',
 	component<TooltipProps>(CosmozTooltip, {
 		styleSheets: [style],
-		observedAttributes: ['title', 'description', 'for', 'placement', 'delay'],
+		observedAttributes: ['heading', 'description', 'for', 'placement', 'delay'],
 	}),
 );
 

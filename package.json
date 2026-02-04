@@ -67,6 +67,7 @@
     "@commitlint/cli": "^20.0.0",
     "@commitlint/config-conventional": "^20.0.0",
     "@neovici/cfg": "^2.8.0",
+    "@neovici/cosmoz-button": "^1.0.0",
     "@neovici/cosmoz-icons": "^1.5.0",
     "@neovici/testing": "^2.0.0",
     "@playwright/test": "^1.58.1",

@@ -1,3 +1,4 @@
+import '@neovici/cosmoz-button';
 import { deleteIcon, editIcon, filterIcon } from '@neovici/cosmoz-icons';
 import { html } from '@pionjs/pion';
 import type { Meta, StoryObj } from '@storybook/web-components';
@@ -5,7 +6,7 @@ import { expect, waitFor } from 'storybook/test';
 import '../src/cosmoz-tooltip';
 
 interface StoryArgs {
-	title: string;
+	heading: string;
 	description: string;
 	placement: string;
 	delay: number;
@@ -16,7 +17,7 @@ const meta: Meta<StoryArgs> = {
 	component: 'cosmoz-tooltip',
 	tags: ['autodocs'],
 	argTypes: {
-		title: { control: 'text', description: 'Tooltip title (bold heading)' },
+		heading: { control: 'text', description: 'Tooltip heading (bold text)' },
 		description: {
 			control: 'text',
 			description: 'Tooltip description (secondary text)',
@@ -39,7 +40,7 @@ const meta: Meta<StoryArgs> = {
 		},
 	},
 	args: {
-		title: 'Tooltip Title',
+		heading: 'Tooltip Heading',
 		description: 'This is helpful information about the element.',
 		placement: 'top',
 		delay: 300,
@@ -54,31 +55,28 @@ export const Basic: Story = {
 	render: (args) => html`
 		<div style="padding: 4rem; text-align: center;">
 			<cosmoz-tooltip
-				title=${args.title}
+				heading=${args.heading}
 				description=${args.description}
 				placement=${args.placement}
 				delay=${args.delay}
 			>
-				<button>Hover me</button>
+				<cosmoz-button>Hover me</cosmoz-button>
 			</cosmoz-tooltip>
 		</div>
 	`,
 	play: async ({ canvas, step, userEvent }) => {
 		await step('Shows tooltip on hover', async () => {
-			const button = canvas.getByRole('button');
+			const button = canvas.getByShadowRole('button');
 			await userEvent.hover(button);
-			// Wait for the title text to become visible (popover opened)
-			await canvas.findByShadowText(/Tooltip Title/u, {}, { timeout: 1000 });
+			await canvas.findByShadowText(/Tooltip Heading/u, {}, { timeout: 1000 });
 		});
 
 		await step('Hides tooltip on mouse leave', async () => {
-			const button = canvas.getByRole('button');
+			const button = canvas.getByShadowRole('button');
 			await userEvent.unhover(button);
-			// Give time for popover to close
 			await waitFor(
 				async () => {
-					const elements = canvas.queryAllByShadowText(/Tooltip Title/u);
-					// Element exists but should not be visible
+					const elements = canvas.queryAllByShadowText(/Tooltip Heading/u);
 					if (elements.length > 0) {
 						expect(elements[0]).not.toBeVisible();
 					}
@@ -89,21 +87,21 @@ export const Basic: Story = {
 	},
 };
 
-export const TitleOnly: Story = {
+export const HeadingOnly: Story = {
 	args: {
-		title: 'Quick tip',
+		heading: 'Quick tip',
 		description: '',
 	},
 	render: (args) => html`
 		<div style="padding: 4rem; text-align: center;">
-			<cosmoz-tooltip title=${args.title} placement=${args.placement}>
-				<button>Hover for title only</button>
+			<cosmoz-tooltip heading=${args.heading} placement=${args.placement}>
+				<cosmoz-button>Hover for heading only</cosmoz-button>
 			</cosmoz-tooltip>
 		</div>
 	`,
 	play: async ({ canvas, step, userEvent }) => {
-		await step('Shows tooltip with title only', async () => {
-			const button = canvas.getByRole('button');
+		await step('Shows tooltip with heading only', async () => {
+			const button = canvas.getByShadowRole('button');
 			await userEvent.hover(button);
 			await canvas.findByShadowText(/Quick tip/u, {}, { timeout: 1000 });
 		});
@@ -112,8 +110,8 @@ export const TitleOnly: Story = {
 
 export const DescriptionOnly: Story = {
 	args: {
-		title: '',
-		description: 'Just a simple description without a title',
+		heading: '',
+		description: 'Just a simple description without a heading',
 	},
 	render: (args) => html`
 		<div style="padding: 4rem; text-align: center;">
@@ -121,7 +119,7 @@ export const DescriptionOnly: Story = {
 				description=${args.description}
 				placement=${args.placement}
 			>
-				<button>Hover for description only</button>
+				<cosmoz-button>Hover for description only</cosmoz-button>
 			</cosmoz-tooltip>
 		</div>
 	`,
@@ -131,22 +129,48 @@ export const ForAttribute: Story = {
 	render: () => html`
 		<div style="padding: 4rem;">
 			<div
-				style="display: flex; flex-direction: column; gap: 0.5rem; max-width: 300px;"
+				style="display: flex; flex-direction: column; gap: 1rem; max-width: 300px;"
 			>
-				<label for="email-input">Email address</label>
-				<input name="email-input" type="email" placeholder="you@example.com" />
-				<cosmoz-tooltip
-					for="email-input"
-					title="Email format"
-					description="Enter a valid email address like name@domain.com"
-				></cosmoz-tooltip>
+				<div>
+					<cosmoz-tooltip
+						for="hover-target"
+						heading="Hover tooltip"
+						description="This appears when you hover the text"
+					></cosmoz-tooltip>
+					<span
+						name="hover-target"
+						style="cursor: help; text-decoration: underline dotted;"
+					>
+						Hover over this text
+					</span>
+				</div>
+
+				<div>
+					<label>Email address</label>
+					<input
+						name="email-input"
+						type="email"
+						placeholder="you@example.com"
+					/>
+					<cosmoz-tooltip
+						for="email-input"
+						heading="Email format"
+						description="Enter a valid email address like name@domain.com"
+					></cosmoz-tooltip>
+				</div>
 			</div>
 		</div>
 	`,
 	play: async ({ canvas, step, userEvent }) => {
-		await step('Shows tooltip when input is focused', async () => {
+		await step('Shows tooltip when hovering span', async () => {
+			const span = canvas.getByText('Hover over this text');
+			await userEvent.hover(span);
+			await canvas.findByShadowText(/Hover tooltip/u, {}, { timeout: 1000 });
+		});
+
+		await step('Shows tooltip when hovering input', async () => {
 			const input = canvas.getByPlaceholderText('you@example.com');
-			await userEvent.click(input);
+			await userEvent.hover(input);
 			await canvas.findByShadowText(/Email format/u, {}, { timeout: 1000 });
 		});
 	},
@@ -157,28 +181,28 @@ export const Placements: Story = {
 		<div
 			style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 4rem; padding: 6rem; place-items: center;"
 		>
-			<cosmoz-tooltip title="Top placement" placement="top">
-				<button style="padding: 1rem 2rem;">Top</button>
+			<cosmoz-tooltip heading="Top placement" placement="top">
+				<cosmoz-button>Top</cosmoz-button>
 			</cosmoz-tooltip>
-			<cosmoz-tooltip title="Top Center" placement="top center">
-				<button style="padding: 1rem 2rem;">Top Center</button>
+			<cosmoz-tooltip heading="Top Center" placement="top center">
+				<cosmoz-button>Top Center</cosmoz-button>
 			</cosmoz-tooltip>
 			<div></div>
 
-			<cosmoz-tooltip title="Left placement" placement="left">
-				<button style="padding: 1rem 2rem;">Left</button>
+			<cosmoz-tooltip heading="Left placement" placement="left">
+				<cosmoz-button>Left</cosmoz-button>
 			</cosmoz-tooltip>
 			<div></div>
-			<cosmoz-tooltip title="Right placement" placement="right">
-				<button style="padding: 1rem 2rem;">Right</button>
+			<cosmoz-tooltip heading="Right placement" placement="right">
+				<cosmoz-button>Right</cosmoz-button>
 			</cosmoz-tooltip>
 
 			<div></div>
-			<cosmoz-tooltip title="Bottom placement" placement="bottom">
-				<button style="padding: 1rem 2rem;">Bottom</button>
+			<cosmoz-tooltip heading="Bottom placement" placement="bottom">
+				<cosmoz-button>Bottom</cosmoz-button>
 			</cosmoz-tooltip>
-			<cosmoz-tooltip title="Bottom Center" placement="bottom center">
-				<button style="padding: 1rem 2rem;">Bottom Center</button>
+			<cosmoz-tooltip heading="Bottom Center" placement="bottom center">
+				<cosmoz-button>Bottom Center</cosmoz-button>
 			</cosmoz-tooltip>
 		</div>
 	`,
@@ -187,25 +211,24 @@ export const Placements: Story = {
 export const CustomDelay: Story = {
 	args: {
 		delay: 0,
-		title: 'Instant tooltip',
+		heading: 'Instant tooltip',
 		description: 'This appears immediately',
 	},
 	render: (args) => html`
 		<div style="padding: 4rem; text-align: center;">
 			<cosmoz-tooltip
-				title=${args.title}
+				heading=${args.heading}
 				description=${args.description}
 				delay=${args.delay}
 			>
-				<button>No delay (instant)</button>
+				<cosmoz-button>No delay (instant)</cosmoz-button>
 			</cosmoz-tooltip>
 		</div>
 	`,
 	play: async ({ canvas, step, userEvent }) => {
 		await step('Shows tooltip immediately', async () => {
-			const button = canvas.getByRole('button');
+			const button = canvas.getByShadowRole('button');
 			await userEvent.hover(button);
-			// With 0 delay, should appear almost immediately
 			await canvas.findByShadowText(/Instant tooltip/u, {}, { timeout: 200 });
 		});
 	},
@@ -215,7 +238,7 @@ export const CustomContent: Story = {
 	render: () => html`
 		<div style="padding: 4rem; text-align: center;">
 			<cosmoz-tooltip>
-				<button>Rich content tooltip</button>
+				<cosmoz-button>Rich content tooltip</cosmoz-button>
 				<div slot="content">
 					<strong>Custom HTML</strong>
 					<ul style="margin: 0.5rem 0 0; padding-left: 1.25rem;">
@@ -235,7 +258,7 @@ export const OnLinks: Story = {
 			<p>
 				Check out our
 				<cosmoz-tooltip
-					title="External link"
+					heading="External link"
 					description="Opens in a new tab"
 					placement="top"
 				>
@@ -250,26 +273,26 @@ export const OnLinks: Story = {
 export const OnIcons: Story = {
 	render: () => html`
 		<div style="padding: 4rem; display: flex; gap: 1rem;">
-			<cosmoz-tooltip title="Edit" placement="bottom">
-				<button aria-label="Edit" style="padding: 0.5rem;">
+			<cosmoz-tooltip heading="Edit" placement="bottom">
+				<cosmoz-button variant="tertiary" aria-label="Edit">
 					${editIcon({ width: '20', height: '20' })}
-				</button>
+				</cosmoz-button>
 			</cosmoz-tooltip>
 
 			<cosmoz-tooltip
-				title="Delete"
+				heading="Delete"
 				description="This action cannot be undone"
 				placement="bottom"
 			>
-				<button aria-label="Delete" style="padding: 0.5rem;">
+				<cosmoz-button variant="tertiary" aria-label="Delete">
 					${deleteIcon({ width: '20', height: '20' })}
-				</button>
+				</cosmoz-button>
 			</cosmoz-tooltip>
 
-			<cosmoz-tooltip title="Filter" placement="bottom">
-				<button aria-label="Filter" style="padding: 0.5rem;">
+			<cosmoz-tooltip heading="Filter" placement="bottom">
+				<cosmoz-button variant="tertiary" aria-label="Filter">
 					${filterIcon({ width: '20', height: '20' })}
-				</button>
+				</cosmoz-button>
 			</cosmoz-tooltip>
 		</div>
 	`,

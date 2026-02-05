@@ -41,7 +41,7 @@ const meta: Meta<StoryArgs> = {
 	},
 	args: {
 		heading: 'Tooltip Heading',
-		description: 'This is helpful information about the element.',
+		description: 'This is helpful information.',
 		placement: 'top',
 		delay: 300,
 	},

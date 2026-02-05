@@ -21,6 +21,15 @@ interface ForTooltipOptions {
 	delay?: number;
 }
 
+/**
+ * Design decision: No rich content support in for="" mode.
+ *
+ * Wrapping mode can use <slot name="content"> to project arbitrary HTML
+ * into the tooltip popover. The for="" mode popover lives in the light DOM
+ * (outside the component's shadow root), so slots are not available —
+ * there is no shadow boundary to project through. Content is limited to
+ * the heading and description attributes.
+ */
 const renderContent = (
 	popoverEl: HTMLElement,
 	heading?: string,
@@ -44,6 +53,7 @@ export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
 	} = opts;
 	const popover = useRef<HTMLElement>();
 
+	// eslint-disable-next-line max-statements
 	useEffect(() => {
 		if (!forAttr) return;
 

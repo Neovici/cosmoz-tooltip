@@ -1,4 +1,13 @@
-import { component, css, useCallback, useEffect, useRef } from '@pionjs/pion';
+import { normalize } from '@neovici/cosmoz-tokens/normalize';
+import {
+	component,
+	css,
+	render,
+	sheet,
+	useCallback,
+	useEffect,
+	useRef,
+} from '@pionjs/pion';
 import { html, nothing } from 'lit-html';
 import { ref } from 'lit-html/directives/ref.js';
 
@@ -7,25 +16,19 @@ declare global {
 	interface CSSStyleDeclaration {
 		anchorName: string;
 		positionAnchor: string;
+		positionArea: string;
 	}
 }
 
-const style = css`
-	:host {
-		display: inline-block;
-		anchor-name: --tooltip-anchor;
-	}
-
-	/* When using for="" attribute, host doesn't provide anchor */
-	:host([for]) {
-		display: contents;
-		anchor-name: unset;
-	}
-
-	[popover] {
+/**
+ * Shared popover styles used in both shadow DOM (wrapping mode)
+ * and light DOM (for="" mode).
+ */
+const popoverStyle = sheet(css`
+	.cosmoz-tooltip-popover {
 		position: fixed;
-		position-anchor: --tooltip-anchor;
 		inset: unset;
+		pointer-events: none;
 		margin: calc(var(--cz-spacing) * 2);
 		position-try-fallbacks:
 			flip-block,
@@ -56,35 +59,55 @@ const style = css`
 	}
 
 	@starting-style {
-		[popover]:popover-open {
+		.cosmoz-tooltip-popover:popover-open {
 			opacity: 0;
 			transform: translateY(4px) scale(0.96);
 		}
 	}
 
-	[popover]:not(:popover-open) {
+	.cosmoz-tooltip-popover:not(:popover-open) {
 		opacity: 0;
 		transform: translateY(4px) scale(0.96);
 	}
 
-	.title {
+	.cosmoz-tooltip-popover .title {
 		font-weight: var(--cz-font-weight-semibold);
 		display: block;
 	}
 
-	.description {
+	.cosmoz-tooltip-popover .description {
 		margin: 0;
 		color: var(--cz-color-gray-300);
 	}
 
-	.title + .description {
+	.cosmoz-tooltip-popover .title + .description {
 		margin-top: var(--cz-spacing);
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		[popover] {
+		.cosmoz-tooltip-popover {
 			transition: none;
 		}
+	}
+`);
+
+/**
+ * Host-specific styles (shadow DOM only).
+ * The wrapping mode popover binds to the host's anchor name.
+ */
+const style = css`
+	:host {
+		display: inline-block;
+		anchor-name: --tooltip-anchor;
+	}
+
+	:host([for]) {
+		display: contents;
+		anchor-name: unset;
+	}
+
+	.cosmoz-tooltip-popover {
+		position-anchor: --tooltip-anchor;
 	}
 `;
 
@@ -95,6 +118,12 @@ interface TooltipProps {
 	placement?: string;
 	delay?: number;
 }
+
+/** Tooltip content template (shared between wrapping and for="" modes). */
+const tooltipContent = (heading?: string, description?: string) => html`
+	${heading ? html`<strong class="title">${heading}</strong>` : nothing}
+	${description ? html`<p class="description">${description}</p>` : nothing}
+`;
 
 const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 	const {
@@ -119,69 +148,121 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 		popover.current?.hidePopover();
 	}, []);
 
-	// Find target element when using for="" attribute
-	// Search from host's root node (document or parent shadow root)
-	const findTarget = useCallback((): Element | null => {
-		if (!forAttr) return null;
-		const root = host.getRootNode() as ShadowRoot | Document;
-		return root?.querySelector(`[name="${forAttr}"]`);
-	}, [forAttr, host]);
-
-	// Setup event listeners and CSS anchor for for="" target
+	// For attribute mode: create light-DOM popover with event delegation
 	useEffect(() => {
 		if (!forAttr) return;
 
-		const target = findTarget();
-		if (!target) return;
+		const root = host.getRootNode() as Document | ShadowRoot;
 
-		// Set anchor name on target element
-		(target as HTMLElement).style.anchorName = '--tooltip-anchor-external';
-
-		// Set position-anchor on popover to reference the target element
-		if (popover.current) {
-			popover.current.style.positionAnchor = '--tooltip-anchor-external';
+		// Adopt shared popover stylesheet on root (idempotent)
+		if (!root.adoptedStyleSheets.includes(popoverStyle)) {
+			root.adoptedStyleSheets = [...root.adoptedStyleSheets, popoverStyle];
 		}
 
-		target.addEventListener('mouseenter', show);
-		target.addEventListener('mouseleave', hide);
-		target.addEventListener('focusin', show);
-		target.addEventListener('focusout', hide);
+		// Create light-DOM popover element
+		const popoverEl = document.createElement('div');
+		popoverEl.setAttribute('popover', 'manual');
+		popoverEl.setAttribute('role', 'tooltip');
+		popoverEl.classList.add('cosmoz-tooltip-popover');
+
+		// Insert after host to keep it in the same container scope
+		host.after(popoverEl);
+		popover.current = popoverEl;
+
+		// Render initial content
+		render(tooltipContent(heading, description), popoverEl);
+
+		const selector = `[name="${forAttr}"]`;
+		const anchorName = `--tooltip-anchor-${forAttr}`;
+		let showTimeout: number | undefined;
+
+		const showForTarget = (target: Element) => {
+			clearTimeout(showTimeout);
+
+			// Set CSS anchor positioning
+			(target as HTMLElement).style.anchorName = anchorName;
+			popoverEl.style.positionAnchor = anchorName;
+			popoverEl.style.positionArea = placement;
+
+			showTimeout = window.setTimeout(() => popoverEl.showPopover(), delay);
+		};
+
+		const hidePopover = () => {
+			clearTimeout(showTimeout);
+			popoverEl.hidePopover();
+		};
+
+		const onPointerover = (e: Event) => {
+			const target = (e.target as Element).closest?.(selector);
+			if (!target) return;
+			showForTarget(target);
+		};
+
+		const onPointerout = (e: Event) => {
+			const target = (e.target as Element).closest?.(selector);
+			if (!target) return;
+			const related = (e as PointerEvent).relatedTarget as Element | null;
+			// Still inside the target element? Ignore.
+			if (related && target.contains(related)) return;
+			hidePopover();
+		};
+
+		const onFocusin = (e: Event) => {
+			const target = (e.target as Element).closest?.(selector);
+			if (!target) return;
+			showForTarget(target);
+		};
+
+		const onFocusout = (e: Event) => {
+			const target = (e.target as Element).closest?.(selector);
+			if (!target) return;
+			hidePopover();
+		};
+
+		root.addEventListener('pointerover', onPointerover);
+		root.addEventListener('pointerout', onPointerout);
+		root.addEventListener('focusin', onFocusin);
+		root.addEventListener('focusout', onFocusout);
 
 		return () => {
-			target.removeEventListener('mouseenter', show);
-			target.removeEventListener('mouseleave', hide);
-			target.removeEventListener('focusin', show);
-			target.removeEventListener('focusout', hide);
-			(target as HTMLElement).style.anchorName = '';
-			if (popover.current) {
-				popover.current.style.positionAnchor = '';
-			}
+			clearTimeout(showTimeout);
+			root.removeEventListener('pointerover', onPointerover);
+			root.removeEventListener('pointerout', onPointerout);
+			root.removeEventListener('focusin', onFocusin);
+			root.removeEventListener('focusout', onFocusout);
+			popoverEl.hidePopover();
+			popoverEl.remove();
+			popover.current = undefined;
 		};
-	}, [forAttr, findTarget, show, hide]);
+	}, [forAttr, placement, delay]);
 
-	const anchorStyle = `position-area: ${placement};`;
+	// Re-render light-DOM popover content when heading/description change
+	useEffect(() => {
+		if (!forAttr || !popover.current) return;
+		render(tooltipContent(heading, description), popover.current);
+	}, [heading, description, forAttr]);
 
+	// For attribute mode: nothing to render in shadow DOM
+	if (forAttr) return html``;
+
+	// Wrapping mode: render slot + popover in shadow DOM
 	return html`
-		${!forAttr
-			? html`
-					<slot
-						@mouseenter=${show}
-						@mouseleave=${hide}
-						@focusin=${show}
-						@focusout=${hide}
-					></slot>
-				`
-			: nothing}
+		<slot
+			@pointerenter=${show}
+			@pointerleave=${hide}
+			@focusin=${show}
+			@focusout=${hide}
+		></slot>
 		<div
+			class="cosmoz-tooltip-popover"
 			popover="manual"
 			role="tooltip"
-			style=${anchorStyle}
+			style="position-area: ${placement}"
 			${ref((el) => {
 				popover.current = el as HTMLElement | undefined;
 			})}
 		>
-			${heading ? html`<strong class="title">${heading}</strong>` : nothing}
-			${description ? html`<p class="description">${description}</p>` : nothing}
+			${tooltipContent(heading, description)}
 			<slot name="content"></slot>
 		</div>
 	`;
@@ -190,7 +271,7 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 customElements.define(
 	'cosmoz-tooltip',
 	component<TooltipProps>(CosmozTooltip, {
-		styleSheets: [style],
+		styleSheets: [normalize, popoverStyle, style],
 		observedAttributes: ['heading', 'description', 'for', 'placement', 'delay'],
 	}),
 );

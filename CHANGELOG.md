@@ -1,3 +1,9 @@
+## 1.0.0 (2026-02-05)
+
+### Features
+
+* implement cosmoz-tooltip component ([#6](https://github.com/Neovici/cosmoz-tooltip/issues/6)) ([a1b1661](https://github.com/Neovici/cosmoz-tooltip/commit/a1b16611e996768ad0c54e8e6b2377fe6f130b82))
+
 ## [1.3.0](https://github.com/Neovici/cosmoz-component/compare/v1.2.1...v1.3.0) (2026-02-04)
 
 ### Features

@@ -29,6 +29,7 @@ const popoverStyle = sheet(css`
 		position: fixed;
 		inset: unset;
 		pointer-events: none;
+		text-align: left;
 		margin: calc(var(--cz-spacing) * 2);
 		position-try-fallbacks:
 			flip-block,
@@ -155,8 +156,9 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 		const root = host.getRootNode() as Document | ShadowRoot;
 
 		// Adopt shared popover stylesheet on root (idempotent)
-		if (!root.adoptedStyleSheets.includes(popoverStyle)) {
-			root.adoptedStyleSheets = [...root.adoptedStyleSheets, popoverStyle];
+		const sheets = root.adoptedStyleSheets ?? [];
+		if (!sheets.includes(popoverStyle)) {
+			root.adoptedStyleSheets = [...sheets, popoverStyle];
 		}
 
 		// Create light-DOM popover element

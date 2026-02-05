@@ -1,19 +1,22 @@
 {
-  "name": "@neovici/cosmoz-component",
-  "version": "1.3.0",
-  "description": "Template for Neovici public web components",
+  "name": "@neovici/cosmoz-tooltip",
+  "version": "0.0.0",
+  "description": "Tooltip component using CSS Anchor Positioning and Popover API",
   "keywords": [
     "web-components",
     "pion",
-    "lit-html"
+    "lit-html",
+    "tooltip",
+    "popover",
+    "css-anchor-positioning"
   ],
-  "homepage": "https://github.com/Neovici/cosmoz-component#readme",
+  "homepage": "https://github.com/Neovici/cosmoz-tooltip#readme",
   "bugs": {
-    "url": "https://github.com/Neovici/cosmoz-component/issues"
+    "url": "https://github.com/Neovici/cosmoz-tooltip/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Neovici/cosmoz-component.git"
+    "url": "git+https://github.com/Neovici/cosmoz-tooltip.git"
   },
   "license": "Apache-2.0",
   "author": "Neovici Development",
@@ -53,9 +56,10 @@
   ],
   "exports": {
     ".": "./dist/index.js",
-    "./cosmoz-component": "./dist/component.js"
+    "./cosmoz-tooltip": "./dist/cosmoz-tooltip.js"
   },
   "dependencies": {
+    "@neovici/cosmoz-tokens": "^3.2.1",
     "@pionjs/pion": "^2.5.2",
     "lit-html": "^3.3.1"
   },
@@ -63,6 +67,8 @@
     "@commitlint/cli": "^20.0.0",
     "@commitlint/config-conventional": "^20.0.0",
     "@neovici/cfg": "^2.8.0",
+    "@neovici/cosmoz-button": "^1.0.0",
+    "@neovici/cosmoz-icons": "^1.5.0",
     "@neovici/testing": "^2.0.0",
     "@playwright/test": "^1.58.1",
     "@semantic-release/changelog": "^6.0.0",

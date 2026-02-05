@@ -1,5 +1,9 @@
 import '@neovici/cosmoz-button';
-import { deleteIcon, editIcon, filterIcon } from '@neovici/cosmoz-icons';
+import {
+	edit04Icon,
+	filterLinesIcon,
+	trash01Icon,
+} from '@neovici/cosmoz-icons/untitled';
 import { html } from '@pionjs/pion';
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { expect, waitFor } from 'storybook/test';
@@ -126,7 +130,7 @@ export const DescriptionOnly: Story = {
 };
 
 export const ForAttribute: Story = {
-	render: () => html`
+	render: (args) => html`
 		<div style="padding: 4rem;">
 			<div
 				style="display: flex; flex-direction: column; gap: 1rem; max-width: 300px;"
@@ -136,6 +140,8 @@ export const ForAttribute: Story = {
 						for="hover-target"
 						heading="Hover tooltip"
 						description="This appears when you hover the text"
+						placement=${args.placement}
+						delay=${args.delay}
 					></cosmoz-tooltip>
 					<span
 						name="hover-target"
@@ -156,6 +162,8 @@ export const ForAttribute: Story = {
 						for="email-input"
 						heading="Email format"
 						description="Enter a valid email address like name@domain.com"
+						placement=${args.placement}
+						delay=${args.delay}
 					></cosmoz-tooltip>
 				</div>
 			</div>
@@ -235,9 +243,9 @@ export const CustomDelay: Story = {
 };
 
 export const CustomContent: Story = {
-	render: () => html`
+	render: (args) => html`
 		<div style="padding: 4rem; text-align: center;">
-			<cosmoz-tooltip>
+			<cosmoz-tooltip placement=${args.placement} delay=${args.delay}>
 				<cosmoz-button>Rich content tooltip</cosmoz-button>
 				<div slot="content">
 					<strong>Custom HTML</strong>
@@ -253,14 +261,15 @@ export const CustomContent: Story = {
 };
 
 export const OnLinks: Story = {
-	render: () => html`
+	render: (args) => html`
 		<div style="padding: 4rem;">
 			<p>
 				Check out our
 				<cosmoz-tooltip
 					heading="External link"
 					description="Opens in a new tab"
-					placement="top"
+					placement=${args.placement}
+					delay=${args.delay}
 				>
 					<a href="https://example.com" target="_blank">documentation</a>
 				</cosmoz-tooltip>
@@ -271,27 +280,36 @@ export const OnLinks: Story = {
 };
 
 export const OnIcons: Story = {
-	render: () => html`
+	render: (args) => html`
 		<div style="padding: 4rem; display: flex; gap: 1rem;">
-			<cosmoz-tooltip heading="Edit" placement="bottom">
+			<cosmoz-tooltip
+				heading="Edit"
+				placement=${args.placement}
+				delay=${args.delay}
+			>
 				<cosmoz-button variant="tertiary" aria-label="Edit">
-					${editIcon({ width: '20', height: '20' })}
+					${edit04Icon({ width: '20', height: '20' })}
 				</cosmoz-button>
 			</cosmoz-tooltip>
 
 			<cosmoz-tooltip
 				heading="Delete"
 				description="This action cannot be undone"
-				placement="bottom"
+				placement=${args.placement}
+				delay=${args.delay}
 			>
 				<cosmoz-button variant="tertiary" aria-label="Delete">
-					${deleteIcon({ width: '20', height: '20' })}
+					${trash01Icon({ width: '20', height: '20' })}
 				</cosmoz-button>
 			</cosmoz-tooltip>
 
-			<cosmoz-tooltip heading="Filter" placement="bottom">
+			<cosmoz-tooltip
+				heading="Filter"
+				placement=${args.placement}
+				delay=${args.delay}
+			>
 				<cosmoz-button variant="tertiary" aria-label="Filter">
-					${filterIcon({ width: '20', height: '20' })}
+					${filterLinesIcon({ width: '20', height: '20' })}
 				</cosmoz-button>
 			</cosmoz-tooltip>
 		</div>

@@ -3,6 +3,16 @@ import { css, sheet } from '@pionjs/pion';
 /**
  * Shared popover styles used in both shadow DOM (wrapping mode)
  * and light DOM (for="" mode).
+ *
+ * Design decision: No arrow/caret pointing to the anchor.
+ *
+ * CSS Anchor Positioning's position-try-fallbacks can flip the tooltip
+ * to the opposite side when constrained by the viewport. There is no
+ * pure CSS way to detect when a flip occurs (@position-try descriptors
+ * cannot set custom properties or pseudo-element styles), so the arrow
+ * direction cannot reliably match the actual tooltip position.
+ * A JS-based detection (getBoundingClientRect) was considered but
+ * rejected to keep the component purely CSS-positioned.
  */
 export const popoverStyle = sheet(css`
 	.cosmoz-tooltip-popover {

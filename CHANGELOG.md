@@ -1,3 +1,9 @@
+## [1.0.1](https://github.com/Neovici/cosmoz-tooltip/compare/v1.0.0...v1.0.1) (2026-02-06)
+
+### Bug Fixes
+
+* trigger release with dist folder ([#8](https://github.com/Neovici/cosmoz-tooltip/issues/8)) ([e0df466](https://github.com/Neovici/cosmoz-tooltip/commit/e0df46626af06d7e9e667fac5979f2e9af81424a))
+
 ## 1.0.0 (2026-02-05)
 
 ### Features

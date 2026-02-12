@@ -45,7 +45,6 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 	} = host;
 	const popover = useRef<HTMLElement>();
 	const timeoutId = useRef<number>();
-	const hovered = useRef(false);
 
 	const show = useCallback(() => {
 		clearTimeout(timeoutId.current);
@@ -59,11 +58,6 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 		popover.current?.hidePopover();
 	}, []);
 
-	const onFocusIn = useCallback(() => {
-		if (hovered.current) return;
-		show();
-	}, [show]);
-
 	// Pointer events don't bubble, so pointerenter/pointerleave on <slot>
 	// won't fire when the pointer leaves a slotted child in a nested shadow
 	// root. Listen on the host element instead, using pointerover/pointerout
@@ -71,24 +65,18 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 	useEffect(() => {
 		if (forAttr) return;
 
-		const onPointerOver = () => {
-			hovered.current = true;
-			show();
-		};
-
 		const onPointerOut = (e: PointerEvent) => {
 			const related = e.relatedTarget as Element | null;
 			// Still inside the host element? Ignore.
 			if (related && host.contains(related)) return;
-			hovered.current = false;
 			hide();
 		};
 
-		host.addEventListener('pointerover', onPointerOver);
+		host.addEventListener('pointerover', show);
 		host.addEventListener('pointerout', onPointerOut as EventListener);
 
 		return () => {
-			host.removeEventListener('pointerover', onPointerOver);
+			host.removeEventListener('pointerover', show);
 			host.removeEventListener('pointerout', onPointerOut as EventListener);
 		};
 	}, [forAttr, show, hide]);
@@ -101,7 +89,7 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 
 	// Wrapping mode: render slot + popover in shadow DOM
 	return html`
-		<slot @focusin=${onFocusIn} @focusout=${hide}></slot>
+		<slot @focusin=${show} @focusout=${hide}></slot>
 		<div
 			class="cosmoz-tooltip-popover"
 			popover="manual"

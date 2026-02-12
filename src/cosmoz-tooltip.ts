@@ -83,12 +83,7 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 	// For attribute mode: nothing to render in shadow DOM
 	if (forAttr) return nothing;
 
-	const onKeydown = useCallback(
-		(e: KeyboardEvent) => {
-			if (e.key === ' ' || e.key === 'Enter') hide();
-		},
-		[hide],
-	);
+	const onKeydown = useCallback(() => hide(), [hide]);
 
 	// Wrapping mode: render slot + popover in shadow DOM
 	return html`

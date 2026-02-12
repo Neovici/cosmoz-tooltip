@@ -389,27 +389,8 @@ export const KeyboardActivateDismiss: Story = {
 			);
 		});
 
-		await step('Hides tooltip on Space activation', async () => {
-			await userEvent.keyboard(' ');
-			await new Promise((resolve) => setTimeout(resolve, 200));
-			const texts = canvas.queryAllByShadowText(/Activate dismiss tooltip/u);
-			if (texts.length > 0) {
-				expect(texts[0]).not.toBeVisible();
-			}
-		});
-
-		await step('Shows tooltip again on re-focus', async () => {
-			await userEvent.tab();
-			await userEvent.tab({ shift: true });
-			await canvas.findByShadowText(
-				/Activate dismiss tooltip/u,
-				{},
-				{ timeout: 500 },
-			);
-		});
-
-		await step('Hides tooltip on Enter activation', async () => {
-			await userEvent.keyboard('{Enter}');
+		await step('Hides tooltip on any keydown', async () => {
+			await userEvent.keyboard('x');
 			await new Promise((resolve) => setTimeout(resolve, 200));
 			const texts = canvas.queryAllByShadowText(/Activate dismiss tooltip/u);
 			if (texts.length > 0) {

@@ -132,11 +132,7 @@ export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
 		const onKeydown = (e: Event) => {
 			const target = (e.target as Element).closest?.(selector);
 			if (!target) return;
-			const key = (e as KeyboardEvent).key;
-			const isInput =
-				target instanceof HTMLInputElement ||
-				target instanceof HTMLTextAreaElement;
-			if (isInput || key === ' ' || key === 'Enter') hidePopover();
+			hidePopover();
 		};
 
 		root.addEventListener('pointerover', onPointerover);

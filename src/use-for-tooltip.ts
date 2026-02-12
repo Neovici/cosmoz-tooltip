@@ -129,10 +129,21 @@ export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
 			hidePopover();
 		};
 
+		const onKeydown = (e: Event) => {
+			const target = (e.target as Element).closest?.(selector);
+			if (!target) return;
+			const key = (e as KeyboardEvent).key;
+			const isInput =
+				target instanceof HTMLInputElement ||
+				target instanceof HTMLTextAreaElement;
+			if (isInput || key === ' ' || key === 'Enter') hidePopover();
+		};
+
 		root.addEventListener('pointerover', onPointerover);
 		root.addEventListener('pointerout', onPointerout);
 		root.addEventListener('focusin', onFocusin);
 		root.addEventListener('focusout', onFocusout);
+		root.addEventListener('keydown', onKeydown);
 
 		return () => {
 			clearTimeout(showTimeout);
@@ -141,6 +152,7 @@ export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
 			root.removeEventListener('pointerout', onPointerout);
 			root.removeEventListener('focusin', onFocusin);
 			root.removeEventListener('focusout', onFocusout);
+			root.removeEventListener('keydown', onKeydown);
 			popoverEl.hidePopover();
 			popoverEl.remove();
 			popover.current = undefined;

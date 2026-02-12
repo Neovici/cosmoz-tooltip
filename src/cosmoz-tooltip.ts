@@ -1,5 +1,5 @@
 import { normalize } from '@neovici/cosmoz-tokens/normalize';
-import { component, css, useCallback, useRef } from '@pionjs/pion';
+import { component, css, useCallback, useEffect, useRef } from '@pionjs/pion';
 import { html, nothing } from 'lit-html';
 import { ref } from 'lit-html/directives/ref.js';
 import { when } from 'lit-html/directives/when.js';
@@ -45,6 +45,7 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 	} = host;
 	const popover = useRef<HTMLElement>();
 	const timeoutId = useRef<number>();
+	const hovered = useRef(false);
 
 	const show = useCallback(() => {
 		clearTimeout(timeoutId.current);
@@ -58,6 +59,40 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 		popover.current?.hidePopover();
 	}, []);
 
+	const onFocusIn = useCallback(() => {
+		if (hovered.current) return;
+		show();
+	}, [show]);
+
+	// Pointer events don't bubble, so pointerenter/pointerleave on <slot>
+	// won't fire when the pointer leaves a slotted child in a nested shadow
+	// root. Listen on the host element instead, using pointerover/pointerout
+	// which DO bubble through shadow DOM boundaries.
+	useEffect(() => {
+		if (forAttr) return;
+
+		const onPointerOver = () => {
+			hovered.current = true;
+			show();
+		};
+
+		const onPointerOut = (e: PointerEvent) => {
+			const related = e.relatedTarget as Element | null;
+			// Still inside the host element? Ignore.
+			if (related && host.contains(related)) return;
+			hovered.current = false;
+			hide();
+		};
+
+		host.addEventListener('pointerover', onPointerOver);
+		host.addEventListener('pointerout', onPointerOut as EventListener);
+
+		return () => {
+			host.removeEventListener('pointerover', onPointerOver);
+			host.removeEventListener('pointerout', onPointerOut as EventListener);
+		};
+	}, [forAttr, show, hide]);
+
 	// Delegate for="" mode to hook
 	useForTooltip(host, { for: forAttr, heading, description, placement, delay });
 
@@ -66,12 +101,7 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 
 	// Wrapping mode: render slot + popover in shadow DOM
 	return html`
-		<slot
-			@pointerenter=${show}
-			@pointerleave=${hide}
-			@focusin=${show}
-			@focusout=${hide}
-		></slot>
+		<slot @focusin=${onFocusIn} @focusout=${hide}></slot>
 		<div
 			class="cosmoz-tooltip-popover"
 			popover="manual"

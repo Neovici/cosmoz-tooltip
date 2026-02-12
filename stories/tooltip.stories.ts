@@ -279,6 +279,46 @@ export const OnLinks: Story = {
 	`,
 };
 
+export const FocusWithoutHover: Story = {
+	args: {
+		delay: 0,
+		heading: 'Focus test tooltip',
+		description: 'Should not appear on focus alone',
+	},
+	render: (args) => html`
+		<div style="padding: 4rem; text-align: center;">
+			<cosmoz-tooltip
+				heading=${args.heading}
+				description=${args.description}
+				delay=${args.delay}
+			>
+				<cosmoz-button>Focus me</cosmoz-button>
+			</cosmoz-tooltip>
+		</div>
+	`,
+	play: async ({ canvas, step, userEvent }) => {
+		await step(
+			'Should NOT show tooltip after hover out even with focus',
+			async () => {
+				const button = canvas.getByShadowRole('button');
+
+				// Hover then click (focus), then move away
+				await userEvent.hover(button);
+				await userEvent.click(button);
+				await userEvent.unhover(button);
+
+				// Wait beyond the delay
+				await new Promise((resolve) => setTimeout(resolve, 200));
+
+				const tooltipTexts = canvas.queryAllByShadowText(/Focus test tooltip/u);
+				if (tooltipTexts.length > 0) {
+					expect(tooltipTexts[0]).not.toBeVisible();
+				}
+			},
+		);
+	},
+};
+
 export const OnIcons: Story = {
 	render: (args) => html`
 		<div style="padding: 4rem; display: flex; gap: 1rem;">

@@ -83,11 +83,9 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 	// For attribute mode: nothing to render in shadow DOM
 	if (forAttr) return nothing;
 
-	const onKeydown = useCallback(() => hide(), [hide]);
-
 	// Wrapping mode: render slot + popover in shadow DOM
 	return html`
-		<slot @focusin=${show} @focusout=${hide} @keydown=${onKeydown}></slot>
+		<slot @focusin=${show} @focusout=${hide} @keydown=${hide}></slot>
 		<div
 			class="cosmoz-tooltip-popover"
 			popover="manual"

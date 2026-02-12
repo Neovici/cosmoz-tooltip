@@ -45,7 +45,6 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 	} = host;
 	const popover = useRef<HTMLElement>();
 	const timeoutId = useRef<number>();
-
 	const show = useCallback(() => {
 		clearTimeout(timeoutId.current);
 		timeoutId.current = window.setTimeout(() => {

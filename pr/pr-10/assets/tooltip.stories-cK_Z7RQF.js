@@ -1,4 +1,4 @@
-import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import"./preload-helper-PPVm8Dsz.js";let Q,vt=0;function ct(t){Q=t}function lt(){Q=null,vt=0}function xt(){return vt++}const W=Symbol("haunted.phase"),U=Symbol("haunted.hook"),dt=Symbol("haunted.update"),pt=Symbol("haunted.commit"),x=Symbol("haunted.effects"),C=Symbol("haunted.layoutEffects"),X="haunted.context";class $t{update;host;virtual;[U];[x];[C];constructor(e,o){this.update=e,this.host=o,this[U]=new Map,this[x]=[],this[C]=[]}run(e){ct(this);let o=e();return lt(),o}_runEffects(e){let o=this[e];ct(this);for(let n of o)n.call(this);lt()}runEffects(){this._runEffects(x)}runLayoutEffects(){this._runEffects(C)}teardown(){this[U].forEach(o=>{typeof o.teardown=="function"&&o.teardown(!0)})}}const St=Promise.resolve().then.bind(Promise.resolve());function gt(){let t=[],e;function o(){e=null;let n=t;t=[];for(var s=0,i=n.length;s<i;s++)n[s]()}return function(n){t.push(n),e==null&&(e=St(o))}}const kt=gt(),ut=gt();class Tt{renderer;host;state;[W];_updateQueued;_active;constructor(e,o){this.renderer=e,this.host=o,this.state=new $t(this.update.bind(this),o),this[W]=null,this._updateQueued=!1,this._active=!0}update(){this._active&&(this._updateQueued||(kt(()=>{let e=this.handlePhase(dt);ut(()=>{this.handlePhase(pt,e),ut(()=>{this.handlePhase(x)})}),this._updateQueued=!1}),this._updateQueued=!0))}handlePhase(e,o){switch(this[W]=e,e){case pt:this.commit(o),this.runEffects(C);return;case dt:return this.render();case x:return this.runEffects(x)}}render(){return this.state.run(()=>this.renderer.call(this.host,this.host))}runEffects(e){this.state._runEffects(e)}teardown(){this.state.teardown()}pause(){this._active=!1}resume(){this._active=!0}}const st=(...t)=>{const e=new CSSStyleSheet;return e.replaceSync(t.join("")),e},Et=t=>t?.map(e=>typeof e=="string"?st(e):e),_t=(t,...e)=>t.flatMap((o,n)=>[o,e[n]||""]).join(""),T=_t,At=(t="")=>t.replace(/-+([a-z])?/g,(e,o)=>o?o.toUpperCase():"");function Ct(t){class e extends Tt{frag;renderResult;constructor(s,i,b){super(s,b||i),this.frag=i}commit(s){this.renderResult=t(s,this.frag)}}function o(n,s,i){const b=(i||s||{}).baseElement||HTMLElement,{observedAttributes:f=[],useShadowDOM:r=!0,shadowRootInit:y={},styleSheets:l}=i||s||{},d=Et(n.styleSheets||l);class z extends b{_scheduler;static get observedAttributes(){return n.observedAttributes||f||[]}constructor(){if(super(),r===!1)this._scheduler=new e(n,this);else{const c=this.attachShadow({mode:"open",...y});d&&(c.adoptedStyleSheets=d),this._scheduler=new e(n,c,this)}}connectedCallback(){this._scheduler.resume(),this._scheduler.update(),this._scheduler.renderResult?.setConnected(!0)}disconnectedCallback(){this._scheduler.pause(),this._scheduler.teardown(),this._scheduler.renderResult?.setConnected(!1)}attributeChangedCallback(c,h,p){if(h===p)return;let u=p===""?!0:p;Reflect.set(this,At(c),u)}}function w(g){let c=g,h=!1;return Object.freeze({enumerable:!0,configurable:!0,get(){return c},set(p){h&&c===p||(h=!0,c=p,this._scheduler&&this._scheduler.update())}})}const P=new Proxy(b.prototype,{getPrototypeOf(g){return g},set(g,c,h,p){let u;return c in g?(u=Object.getOwnPropertyDescriptor(g,c),u&&u.set?(u.set.call(p,h),!0):(Reflect.set(g,c,h,p),!0)):(typeof c=="symbol"||c[0]==="_"?u={enumerable:!0,configurable:!0,writable:!0,value:h}:u=w(h),Object.defineProperty(p,c,u),u.set&&u.set.call(p,h),!0)}});return Object.setPrototypeOf(z.prototype,P),z}return o}class E{id;state;constructor(e,o){this.id=e,this.state=o}}function Bt(t,...e){let o=xt(),n=Q[U],s=n.get(o);return s||(s=new t(o,Q,...e),n.set(o,s)),s.update(...e)}function _(t){return Bt.bind(null,t)}function bt(t){return _(class extends E{callback;lastValues;values;_teardown;constructor(e,o,n,s){super(e,o),t(o,this)}update(e,o){this.callback=e,this.values=o}call(){const e=!this.values||this.hasChanged();this.lastValues=this.values,e&&this.run()}run(){this.teardown(),this._teardown=this.callback.call(this.state)}teardown(e){typeof this._teardown=="function"&&(this._teardown(),this._teardown=void 0),e&&(this.lastValues=this.values=void 0)}hasChanged(){return!this.lastValues||this.values.some((e,o)=>this.lastValues[o]!==e)}})}function ft(t,e){t[x].push(e)}const tt=bt(ft),Pt=t=>t instanceof Element?t:t.startNode||t.endNode||t.parentNode,Ht=_(class extends E{Context;value;_ranEffect;_unsubscribe;constructor(t,e,o){super(t,e),this._updater=this._updater.bind(this),this._ranEffect=!1,this._unsubscribe=null,ft(e,this)}update(t){return this.Context!==t&&(this._subscribe(t),this.Context=t),this.value}call(){this._ranEffect||(this._ranEffect=!0,this._unsubscribe&&this._unsubscribe(),this._subscribe(this.Context),this.state.update())}_updater(t){this.value=t,this.state.update()}_subscribe(t){const e={Context:t,callback:this._updater};Pt(this.state.host).dispatchEvent(new CustomEvent(X,{detail:e,bubbles:!0,cancelable:!0,composed:!0}));const{unsubscribe:n=null,value:s}=e;this.value=n?s:t.defaultValue,this._unsubscribe=n}teardown(){this._unsubscribe&&this._unsubscribe()}});function Ft(t){return e=>{const o={Provider:class extends HTMLElement{listeners;_value;constructor(){super(),this.style.display="contents",this.listeners=new Set,this.addEventListener(X,this)}disconnectedCallback(){this.removeEventListener(X,this)}handleEvent(n){const{detail:s}=n;s.Context===o&&(s.value=this.value,s.unsubscribe=this.unsubscribe.bind(this,s.callback),this.listeners.add(s.callback),n.stopPropagation())}unsubscribe(n){this.listeners.delete(n)}set value(n){this._value=n;for(let s of this.listeners)s(n)}get value(){return this._value}},Consumer:t(function({render:n}){const s=Ht(o);return n(s)},{useShadowDOM:!1}),defaultValue:e};return o}}const yt=_(class extends E{value;values;constructor(t,e,o,n){super(t,e),this.value=o(),this.values=n}update(t,e){return this.hasChanged(e)&&(this.values=e,this.value=t()),this.value}hasChanged(t=[]){return t.some((e,o)=>this.values[o]!==e)}}),K=(t,e)=>yt(()=>t,e);function Rt(t,e){t[C].push(e)}bt(Rt);_(class extends E{args;constructor(t,e,o){super(t,e),this.updater=this.updater.bind(this),typeof o=="function"&&(o=o()),this.makeArgs(o)}update(){return this.args}updater(t){const[e]=this.args;typeof t=="function"&&(t=t(e)),!Object.is(e,t)&&(this.makeArgs(t),this.state.update())}makeArgs(t){this.args=Object.freeze([t,this.updater])}});_(class extends E{reducer;currentState;constructor(t,e,o,n,s){super(t,e),this.dispatch=this.dispatch.bind(this),this.currentState=s!==void 0?s(n):n}update(t){return this.reducer=t,[this.currentState,this.dispatch]}dispatch(t){this.currentState=this.reducer(this.currentState,t),this.state.update()}});const Lt=/([A-Z])/gu;_(class extends E{property;eventName;constructor(t,e,o,n){if(super(t,e),this.state.virtual)throw new Error("Can't be used with virtual components.");this.updater=this.updater.bind(this),this.property=o,this.eventName=o.replace(Lt,"-$1").toLowerCase()+"-changed",this.state.host[this.property]==null&&(typeof n=="function"&&(n=n()),n!=null&&this.updateProp(n))}update(t,e){return[this.state.host[this.property],this.updater]}updater(t){const e=this.state.host[this.property];typeof t=="function"&&(t=t(e)),!Object.is(e,t)&&this.updateProp(t)}updateProp(t){this.notify(t).defaultPrevented||(this.state.host[this.property]=t)}notify(t){const e=new CustomEvent(this.eventName,{detail:{value:t,path:this.property},cancelable:!0});return this.state.host.dispatchEvent(e),e}});function et(t){return yt(()=>({current:t}),[])}function Ot({render:t}){const e=Ct(t),o=Ft(e);return{component:e,createContext:o}}const It={CHILD:2},Mt=t=>(...e)=>({_$litDirective$:t,values:e});class Nt{constructor(e){}get _$AU(){return this._$AM._$AU}_$AT(e,o,n){this._$Ct=e,this._$AM=o,this._$Ci=n}_$AS(e,o){return this.update(e,o)}update(e,o){return this.render(...o)}}const B=(t,e)=>{const o=t._$AN;if(o===void 0)return!1;for(const n of o)n._$AO?.(e,!1),B(n,e);return!0},Y=t=>{let e,o;do{if((e=t._$AM)===void 0)break;o=e._$AN,o.delete(t),t=e}while(o?.size===0)},wt=t=>{for(let e;e=t._$AM;t=e){let o=e._$AN;if(o===void 0)e._$AN=o=new Set;else if(o.has(t))break;o.add(t),Vt(e)}};function Dt(t){this._$AN!==void 0?(Y(this),this._$AM=t,wt(this)):this._$AM=t}function jt(t,e=!1,o=0){const n=this._$AH,s=this._$AN;if(s!==void 0&&s.size!==0)if(e)if(Array.isArray(n))for(let i=o;i<n.length;i++)B(n[i],!1),Y(n[i]);else n!=null&&(B(n,!1),Y(n));else B(this,t)}const Vt=t=>{t.type==It.CHILD&&(t._$AP??=jt,t._$AQ??=Dt)};class qt extends Nt{constructor(){super(...arguments),this._$AN=void 0}_$AT(e,o,n){super._$AT(e,o,n),wt(this),this.isConnected=e._$AU}_$AO(e,o=!0){e!==this.isConnected&&(this.isConnected=e,e?this.reconnected?.():this.disconnected?.()),o&&(B(this,e),Y(this))}setValue(e){if(zt(this._$Ct))this._$Ct._$AI(e,this);else{const o=[...this._$Ct._$AH];o[this._$Ci]=e,this._$Ct._$AI(o,this,0)}}disconnected(){}reconnected(){}}const{component:it}=Ot({render:mt}),at=st(T`
+import{r as zt,D as mt,b as a,A as Z,w as ot}from"./iframe-B0yHmnrw.js";import"./preload-helper-PPVm8Dsz.js";let q,vt=0;function ct(t){q=t}function lt(){q=null,vt=0}function xt(){return vt++}const Y=Symbol("haunted.phase"),U=Symbol("haunted.hook"),dt=Symbol("haunted.update"),pt=Symbol("haunted.commit"),x=Symbol("haunted.effects"),E=Symbol("haunted.layoutEffects"),J="haunted.context";class $t{update;host;virtual;[U];[x];[E];constructor(e,o){this.update=e,this.host=o,this[U]=new Map,this[x]=[],this[E]=[]}run(e){ct(this);let o=e();return lt(),o}_runEffects(e){let o=this[e];ct(this);for(let n of o)n.call(this);lt()}runEffects(){this._runEffects(x)}runLayoutEffects(){this._runEffects(E)}teardown(){this[U].forEach(o=>{typeof o.teardown=="function"&&o.teardown(!0)})}}const St=Promise.resolve().then.bind(Promise.resolve());function gt(){let t=[],e;function o(){e=null;let n=t;t=[];for(var s=0,i=n.length;s<i;s++)n[s]()}return function(n){t.push(n),e==null&&(e=St(o))}}const kt=gt(),ut=gt();class Tt{renderer;host;state;[Y];_updateQueued;_active;constructor(e,o){this.renderer=e,this.host=o,this.state=new $t(this.update.bind(this),o),this[Y]=null,this._updateQueued=!1,this._active=!0}update(){this._active&&(this._updateQueued||(kt(()=>{let e=this.handlePhase(dt);ut(()=>{this.handlePhase(pt,e),ut(()=>{this.handlePhase(x)})}),this._updateQueued=!1}),this._updateQueued=!0))}handlePhase(e,o){switch(this[Y]=e,e){case pt:this.commit(o),this.runEffects(E);return;case dt:return this.render();case x:return this.runEffects(x)}}render(){return this.state.run(()=>this.renderer.call(this.host,this.host))}runEffects(e){this.state._runEffects(e)}teardown(){this.state.teardown()}pause(){this._active=!1}resume(){this._active=!0}}const nt=(...t)=>{const e=new CSSStyleSheet;return e.replaceSync(t.join("")),e},_t=t=>t?.map(e=>typeof e=="string"?nt(e):e),Et=(t,...e)=>t.flatMap((o,n)=>[o,e[n]||""]).join(""),k=Et,At=(t="")=>t.replace(/-+([a-z])?/g,(e,o)=>o?o.toUpperCase():"");function Ct(t){class e extends Tt{frag;renderResult;constructor(s,i,g){super(s,g||i),this.frag=i}commit(s){this.renderResult=t(s,this.frag)}}function o(n,s,i){const g=(i||s||{}).baseElement||HTMLElement,{observedAttributes:b=[],useShadowDOM:r=!0,shadowRootInit:f={},styleSheets:l}=i||s||{},u=_t(n.styleSheets||l);class z extends g{_scheduler;static get observedAttributes(){return n.observedAttributes||b||[]}constructor(){if(super(),r===!1)this._scheduler=new e(n,this);else{const c=this.attachShadow({mode:"open",...f});u&&(c.adoptedStyleSheets=u),this._scheduler=new e(n,c,this)}}connectedCallback(){this._scheduler.resume(),this._scheduler.update(),this._scheduler.renderResult?.setConnected(!0)}disconnectedCallback(){this._scheduler.pause(),this._scheduler.teardown(),this._scheduler.renderResult?.setConnected(!1)}attributeChangedCallback(c,h,d){if(h===d)return;let p=d===""?!0:d;Reflect.set(this,At(c),p)}}function w(m){let c=m,h=!1;return Object.freeze({enumerable:!0,configurable:!0,get(){return c},set(d){h&&c===d||(h=!0,c=d,this._scheduler&&this._scheduler.update())}})}const B=new Proxy(g.prototype,{getPrototypeOf(m){return m},set(m,c,h,d){let p;return c in m?(p=Object.getOwnPropertyDescriptor(m,c),p&&p.set?(p.set.call(d,h),!0):(Reflect.set(m,c,h,d),!0)):(typeof c=="symbol"||c[0]==="_"?p={enumerable:!0,configurable:!0,writable:!0,value:h}:p=w(h),Object.defineProperty(d,c,p),p.set&&p.set.call(d,h),!0)}});return Object.setPrototypeOf(z.prototype,B),z}return o}class T{id;state;constructor(e,o){this.id=e,this.state=o}}function Bt(t,...e){let o=xt(),n=q[U],s=n.get(o);return s||(s=new t(o,q,...e),n.set(o,s)),s.update(...e)}function _(t){return Bt.bind(null,t)}function bt(t){return _(class extends T{callback;lastValues;values;_teardown;constructor(e,o,n,s){super(e,o),t(o,this)}update(e,o){this.callback=e,this.values=o}call(){const e=!this.values||this.hasChanged();this.lastValues=this.values,e&&this.run()}run(){this.teardown(),this._teardown=this.callback.call(this.state)}teardown(e){typeof this._teardown=="function"&&(this._teardown(),this._teardown=void 0),e&&(this.lastValues=this.values=void 0)}hasChanged(){return!this.lastValues||this.values.some((e,o)=>this.lastValues[o]!==e)}})}function ft(t,e){t[x].push(e)}const X=bt(ft),Pt=t=>t instanceof Element?t:t.startNode||t.endNode||t.parentNode,Ft=_(class extends T{Context;value;_ranEffect;_unsubscribe;constructor(t,e,o){super(t,e),this._updater=this._updater.bind(this),this._ranEffect=!1,this._unsubscribe=null,ft(e,this)}update(t){return this.Context!==t&&(this._subscribe(t),this.Context=t),this.value}call(){this._ranEffect||(this._ranEffect=!0,this._unsubscribe&&this._unsubscribe(),this._subscribe(this.Context),this.state.update())}_updater(t){this.value=t,this.state.update()}_subscribe(t){const e={Context:t,callback:this._updater};Pt(this.state.host).dispatchEvent(new CustomEvent(J,{detail:e,bubbles:!0,cancelable:!0,composed:!0}));const{unsubscribe:n=null,value:s}=e;this.value=n?s:t.defaultValue,this._unsubscribe=n}teardown(){this._unsubscribe&&this._unsubscribe()}});function Ht(t){return e=>{const o={Provider:class extends HTMLElement{listeners;_value;constructor(){super(),this.style.display="contents",this.listeners=new Set,this.addEventListener(J,this)}disconnectedCallback(){this.removeEventListener(J,this)}handleEvent(n){const{detail:s}=n;s.Context===o&&(s.value=this.value,s.unsubscribe=this.unsubscribe.bind(this,s.callback),this.listeners.add(s.callback),n.stopPropagation())}unsubscribe(n){this.listeners.delete(n)}set value(n){this._value=n;for(let s of this.listeners)s(n)}get value(){return this._value}},Consumer:t(function({render:n}){const s=Ft(o);return n(s)},{useShadowDOM:!1}),defaultValue:e};return o}}const yt=_(class extends T{value;values;constructor(t,e,o,n){super(t,e),this.value=o(),this.values=n}update(t,e){return this.hasChanged(e)&&(this.values=e,this.value=t()),this.value}hasChanged(t=[]){return t.some((e,o)=>this.values[o]!==e)}}),W=(t,e)=>yt(()=>t,e);function Rt(t,e){t[E].push(e)}bt(Rt);_(class extends T{args;constructor(t,e,o){super(t,e),this.updater=this.updater.bind(this),typeof o=="function"&&(o=o()),this.makeArgs(o)}update(){return this.args}updater(t){const[e]=this.args;typeof t=="function"&&(t=t(e)),!Object.is(e,t)&&(this.makeArgs(t),this.state.update())}makeArgs(t){this.args=Object.freeze([t,this.updater])}});_(class extends T{reducer;currentState;constructor(t,e,o,n,s){super(t,e),this.dispatch=this.dispatch.bind(this),this.currentState=s!==void 0?s(n):n}update(t){return this.reducer=t,[this.currentState,this.dispatch]}dispatch(t){this.currentState=this.reducer(this.currentState,t),this.state.update()}});const Lt=/([A-Z])/gu;_(class extends T{property;eventName;constructor(t,e,o,n){if(super(t,e),this.state.virtual)throw new Error("Can't be used with virtual components.");this.updater=this.updater.bind(this),this.property=o,this.eventName=o.replace(Lt,"-$1").toLowerCase()+"-changed",this.state.host[this.property]==null&&(typeof n=="function"&&(n=n()),n!=null&&this.updateProp(n))}update(t,e){return[this.state.host[this.property],this.updater]}updater(t){const e=this.state.host[this.property];typeof t=="function"&&(t=t(e)),!Object.is(e,t)&&this.updateProp(t)}updateProp(t){this.notify(t).defaultPrevented||(this.state.host[this.property]=t)}notify(t){const e=new CustomEvent(this.eventName,{detail:{value:t,path:this.property},cancelable:!0});return this.state.host.dispatchEvent(e),e}});function tt(t){return yt(()=>({current:t}),[])}function Ot({render:t}){const e=Ct(t),o=Ht(e);return{component:e,createContext:o}}const Mt={CHILD:2},It=t=>(...e)=>({_$litDirective$:t,values:e});class Nt{constructor(e){}get _$AU(){return this._$AM._$AU}_$AT(e,o,n){this._$Ct=e,this._$AM=o,this._$Ci=n}_$AS(e,o){return this.update(e,o)}update(e,o){return this.render(...o)}}const A=(t,e)=>{const o=t._$AN;if(o===void 0)return!1;for(const n of o)n._$AO?.(e,!1),A(n,e);return!0},Q=t=>{let e,o;do{if((e=t._$AM)===void 0)break;o=e._$AN,o.delete(t),t=e}while(o?.size===0)},wt=t=>{for(let e;e=t._$AM;t=e){let o=e._$AN;if(o===void 0)e._$AN=o=new Set;else if(o.has(t))break;o.add(t),Vt(e)}};function Dt(t){this._$AN!==void 0?(Q(this),this._$AM=t,wt(this)):this._$AM=t}function jt(t,e=!1,o=0){const n=this._$AH,s=this._$AN;if(s!==void 0&&s.size!==0)if(e)if(Array.isArray(n))for(let i=o;i<n.length;i++)A(n[i],!1),Q(n[i]);else n!=null&&(A(n,!1),Q(n));else A(this,t)}const Vt=t=>{t.type==Mt.CHILD&&(t._$AP??=jt,t._$AQ??=Dt)};class Gt extends Nt{constructor(){super(...arguments),this._$AN=void 0}_$AT(e,o,n){super._$AT(e,o,n),wt(this),this.isConnected=e._$AU}_$AO(e,o=!0){e!==this.isConnected&&(this.isConnected=e,e?this.reconnected?.():this.disconnected?.()),o&&(A(this,e),Q(this))}setValue(e){if(zt(this._$Ct))this._$Ct._$AI(e,this);else{const o=[...this._$Ct._$AH];o[this._$Ci]=e,this._$Ct._$AI(o,this,0)}}disconnected(){}reconnected(){}}const{component:st}=Ot({render:mt}),it=nt(k`
 	/*
 	 * Use border-box sizing for all elements.
 	 * This is safe and doesn't conflict with child component styles.
@@ -208,7 +208,7 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
 	[hidden]:where(:not([hidden='until-found'])) {
 		display: none !important;
 	}
-`),Gt=T`
+`),Ut=k`
 	position: relative;
 
 	&::before {
@@ -221,7 +221,7 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
 		mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
 		-webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
 	}
-`,Ut=T`
+`,qt=k`
 	:host {
 		display: inline-flex;
 	}
@@ -294,7 +294,7 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
 		border-radius: var(--cz-radius-md);
 
 		/* Primary - default variant */
-		${Gt}
+		${Ut}
 		background-color: var(--cz-color-bg-brand-solid);
 		color: var(--cz-color-text-on-brand);
 		box-shadow: var(--cz-shadow-xs-skeumorphic);
@@ -459,7 +459,7 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
 			<slot></slot>
 			<slot name="suffix"></slot>
 		</button>
-	`};customElements.define("cosmoz-button",it(Yt,{observedAttributes:Qt,styleSheets:[at,Ut],shadowRootInit:{mode:"open",delegatesFocus:!0}}));const S=t=>t??J;function $(t,e,o){return t?e(t):o?.(t)}const Wt=({slot:t,title:e,className:o,width:n="24",height:s="24",styles:i}={})=>a`
+	`};customElements.define("cosmoz-button",st(Yt,{observedAttributes:Qt,styleSheets:[it,qt],shadowRootInit:{mode:"open",delegatesFocus:!0}}));const S=t=>t??Z;function $(t,e,o){return t?e(t):o?.(t)}const Wt=({slot:t,title:e,className:o,width:n="24",height:s="24",styles:i}={})=>a`
   <svg
     slot=${S(t)}
     class=${`edit-04-icon ${o??""}`}
@@ -475,7 +475,7 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
     height=${s}
     style=${S(i)}
   >
-    ${$(e,()=>nt`<title>${e}</title>`)}
+    ${$(e,()=>ot`<title>${e}</title>`)}
     <path
       d="m21 18-1 1.094A2.71 2.71 0 0 1 18 20c-.75 0-1.47-.326-2-.906a2.716 2.716 0 0 0-2-.904c-.75 0-1.469.325-2 .904M3 20h1.675c.489 0 .733 0 .964-.055.204-.05.399-.13.578-.24.201-.123.374-.296.72-.642L19.5 6.5a2.121 2.121 0 0 0-3-3L3.937 16.063c-.346.346-.519.519-.642.72a2 2 0 0 0-.24.578c-.055.23-.055.475-.055.965V20Z"
     />
@@ -496,7 +496,7 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
     height=${s}
     style=${S(i)}
   >
-    ${$(e,()=>nt`<title>${e}</title>`)}
+    ${$(e,()=>ot`<title>${e}</title>`)}
     <path d="M6 12h12M3 6h18M9 18h6" />
   </svg>
 `,Zt=({slot:t,title:e,className:o,width:n="24",height:s="24",styles:i}={})=>a`
@@ -515,12 +515,12 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
     height=${s}
     style=${S(i)}
   >
-    ${$(e,()=>nt`<title>${e}</title>`)}
+    ${$(e,()=>ot`<title>${e}</title>`)}
     <path
       d="M16 6v-.8c0-1.12 0-1.68-.218-2.108a2 2 0 0 0-.874-.874C14.48 2 13.92 2 12.8 2h-1.6c-1.12 0-1.68 0-2.108.218a2 2 0 0 0-.874.874C8 3.52 8 4.08 8 5.2V6m2 5.5v5m4-5v5M3 6h18m-2 0v11.2c0 1.68 0 2.52-.327 3.162a3 3 0 0 1-1.311 1.311C16.72 22 15.88 22 14.2 22H9.8c-1.68 0-2.52 0-3.162-.327a3 3 0 0 1-1.311-1.311C5 19.72 5 18.88 5 17.2V6"
     />
   </svg>
-`,Z=new WeakMap,Jt=Mt(class extends qt{render(t){return J}update(t,[e]){const o=e!==this.G;return o&&this.G!==void 0&&this.rt(void 0),(o||this.lt!==this.ct)&&(this.G=e,this.ht=t.options?.host,this.rt(this.ct=t.element)),J}rt(t){if(this.isConnected||(t=void 0),typeof this.G=="function"){const e=this.ht??globalThis;let o=Z.get(e);o===void 0&&(o=new WeakMap,Z.set(e,o)),o.get(this.G)!==void 0&&this.G.call(this.ht,void 0),o.set(this.G,t),t!==void 0&&this.G.call(this.ht,t)}else this.G.value=t}get lt(){return typeof this.G=="function"?Z.get(this.ht??globalThis)?.get(this.G):this.G?.value}disconnected(){this.lt===this.ct&&this.rt(void 0)}reconnected(){this.rt(this.ct)}}),Xt=T`
+`,K=new WeakMap,Jt=It(class extends Gt{render(t){return Z}update(t,[e]){const o=e!==this.G;return o&&this.G!==void 0&&this.rt(void 0),(o||this.lt!==this.ct)&&(this.G=e,this.ht=t.options?.host,this.rt(this.ct=t.element)),Z}rt(t){if(this.isConnected||(t=void 0),typeof this.G=="function"){const e=this.ht??globalThis;let o=K.get(e);o===void 0&&(o=new WeakMap,K.set(e,o)),o.get(this.G)!==void 0&&this.G.call(this.ht,void 0),o.set(this.G,t),t!==void 0&&this.G.call(this.ht,t)}else this.G.value=t}get lt(){return typeof this.G=="function"?K.get(this.ht??globalThis)?.get(this.G):this.G?.value}disconnected(){this.lt===this.ct&&this.rt(void 0)}reconnected(){this.rt(this.ct)}}),Xt=k`
 	:host {
 		display: flex;
 		flex-direction: column;
@@ -539,11 +539,11 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
 		margin: 0;
 		color: var(--cz-color-gray-300);
 	}
-`;customElements.define("cosmoz-tooltip-content",it(()=>a`
+`;customElements.define("cosmoz-tooltip-content",st(()=>a`
 			<slot name="heading"></slot>
 			<slot name="description"></slot>
 			<slot></slot>
-		`,{styleSheets:[at,Xt]}));const ot=st(T`
+		`,{styleSheets:[it,Xt]}));const et=nt(k`
 	.cosmoz-tooltip-popover {
 		position: fixed;
 		inset: unset;
@@ -595,7 +595,7 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
 `),ht=(t,e,o)=>mt(a`<cosmoz-tooltip-content>
 			${$(e,()=>a`<strong slot="heading">${e}</strong>`)}
 			${$(o,()=>a`<p slot="description">${o}</p>`)}
-		</cosmoz-tooltip-content>`,t),te=(t,e)=>{const{for:o,heading:n,description:s,placement:i="top",delay:b=300}=e,f=et();tt(()=>{if(!o)return;const r=t.getRootNode(),y=r.adoptedStyleSheets??[];y.includes(ot)||(r.adoptedStyleSheets=[...y,ot]);const l=document.createElement("div");l.setAttribute("popover","manual"),l.setAttribute("role","tooltip"),l.classList.add("cosmoz-tooltip-popover"),t.after(l),f.current=l,ht(l,n,s);const d=`[name="${o}"]`,z=`--tooltip-anchor-${o}`;let w;const P=m=>{clearTimeout(w),m.style.anchorName=z,l.style.positionAnchor=z,l.style.positionArea=i,w=window.setTimeout(()=>l.showPopover(),b)},g=()=>{clearTimeout(w),l.hidePopover()},c=m=>{const v=m.target.closest?.(d);v&&P(v)},h=m=>{const v=m.target.closest?.(d);if(!v)return;const A=m.relatedTarget;A&&v.contains(A)||g()},p=m=>{const v=m.target.closest?.(d);v&&P(v)},u=m=>{m.target.closest?.(d)&&g()},rt=m=>{const v=m.target.closest?.(d);if(!v)return;const A=m.key;(v instanceof HTMLInputElement||v instanceof HTMLTextAreaElement||A===" "||A==="Enter")&&g()};return r.addEventListener("pointerover",c),r.addEventListener("pointerout",h),r.addEventListener("focusin",p),r.addEventListener("focusout",u),r.addEventListener("keydown",rt),()=>{clearTimeout(w),r.removeEventListener("pointerover",c),r.removeEventListener("pointerout",h),r.removeEventListener("focusin",p),r.removeEventListener("focusout",u),r.removeEventListener("keydown",rt),l.hidePopover(),l.remove(),f.current=void 0}},[o,i,b]),tt(()=>{!o||!f.current||ht(f.current,n,s)},[n,s,o])},ee=T`
+		</cosmoz-tooltip-content>`,t),te=(t,e)=>{const{for:o,heading:n,description:s,placement:i="top",delay:g=300}=e,b=tt();X(()=>{if(!o)return;const r=t.getRootNode(),f=r.adoptedStyleSheets??[];f.includes(et)||(r.adoptedStyleSheets=[...f,et]);const l=document.createElement("div");l.setAttribute("popover","manual"),l.setAttribute("role","tooltip"),l.classList.add("cosmoz-tooltip-popover"),t.after(l),b.current=l,ht(l,n,s);const u=`[name="${o}"]`,z=`--tooltip-anchor-${o}`;let w;const B=v=>{clearTimeout(w),v.style.anchorName=z,l.style.positionAnchor=z,l.style.positionArea=i,w=window.setTimeout(()=>l.showPopover(),g)},m=()=>{clearTimeout(w),l.hidePopover()},c=v=>{const y=v.target.closest?.(u);y&&B(y)},h=v=>{const y=v.target.closest?.(u);if(!y)return;const rt=v.relatedTarget;rt&&y.contains(rt)||m()},d=v=>{const y=v.target.closest?.(u);y&&B(y)},p=v=>{v.target.closest?.(u)&&m()},at=v=>{v.target.closest?.(u)&&m()};return r.addEventListener("pointerover",c),r.addEventListener("pointerout",h),r.addEventListener("focusin",d),r.addEventListener("focusout",p),r.addEventListener("keydown",at),()=>{clearTimeout(w),r.removeEventListener("pointerover",c),r.removeEventListener("pointerout",h),r.removeEventListener("focusin",d),r.removeEventListener("focusout",p),r.removeEventListener("keydown",at),l.hidePopover(),l.remove(),b.current=void 0}},[o,i,g]),X(()=>{!o||!b.current||ht(b.current,n,s)},[n,s,o])},ee=k`
 	:host {
 		display: inline-block;
 		anchor-name: --tooltip-anchor;
@@ -609,14 +609,14 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
 	.cosmoz-tooltip-popover {
 		position-anchor: --tooltip-anchor;
 	}
-`,oe=t=>{const{heading:e,description:o,for:n,placement:s="top",delay:i=300}=t,b=et(),f=et(),r=K(()=>{clearTimeout(f.current),f.current=window.setTimeout(()=>{b.current?.showPopover()},i)},[i]),y=K(()=>{clearTimeout(f.current),b.current?.hidePopover()},[]);if(tt(()=>{if(n)return;const d=z=>{const w=z.relatedTarget;w&&t.contains(w)||y()};return t.addEventListener("pointerover",r),t.addEventListener("pointerout",d),()=>{t.removeEventListener("pointerover",r),t.removeEventListener("pointerout",d)}},[n,r,y]),te(t,{for:n,heading:e,description:o,placement:s,delay:i}),n)return a``;const l=K(d=>{(d.key===" "||d.key==="Enter")&&y()},[y]);return a`
-		<slot @focusin=${r} @focusout=${y} @keydown=${l}></slot>
+`,oe=t=>{const{heading:e,description:o,for:n,placement:s="top",delay:i=300}=t,g=tt(),b=tt(),r=W(()=>{clearTimeout(b.current),b.current=window.setTimeout(()=>{g.current?.showPopover()},i)},[i]),f=W(()=>{clearTimeout(b.current),g.current?.hidePopover()},[]);if(X(()=>{if(n)return;const u=z=>{const w=z.relatedTarget;w&&t.contains(w)||f()};return t.addEventListener("pointerover",r),t.addEventListener("pointerout",u),()=>{t.removeEventListener("pointerover",r),t.removeEventListener("pointerout",u)}},[n,r,f]),te(t,{for:n,heading:e,description:o,placement:s,delay:i}),n)return a``;const l=W(()=>f(),[f]);return a`
+		<slot @focusin=${r} @focusout=${f} @keydown=${l}></slot>
 		<div
 			class="cosmoz-tooltip-popover"
 			popover="manual"
 			role="tooltip"
 			style="position-area: ${s}"
-			${Jt(d=>{b.current=d})}
+			${Jt(u=>{g.current=u})}
 		>
 			<cosmoz-tooltip-content>
 				${$(e,()=>a`<strong slot="heading">${e}</strong>`)}
@@ -624,7 +624,7 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
 				<slot name="content"></slot>
 			</cosmoz-tooltip-content>
 		</div>
-	`};customElements.define("cosmoz-tooltip",it(oe,{styleSheets:[at,ot,ee],observedAttributes:["heading","description","for","placement","delay"]}));const{expect:k,waitFor:ne}=__STORYBOOK_MODULE_TEST__,re={title:"CosmozTooltip",component:"cosmoz-tooltip",tags:["autodocs"],argTypes:{heading:{control:"text",description:"Tooltip heading (bold text)"},description:{control:"text",description:"Tooltip description (secondary text)"},placement:{control:"select",options:["top","bottom","left","right","top center","bottom center"],description:"Position relative to trigger"},delay:{control:"number",description:"Delay before showing tooltip (ms)"}},args:{heading:"Tooltip Heading",description:"This is helpful information.",placement:"top",delay:300}},H={render:t=>a`
+	`};customElements.define("cosmoz-tooltip",st(oe,{styleSheets:[it,et,ee],observedAttributes:["heading","description","for","placement","delay"]}));const{expect:C,waitFor:ne}=__STORYBOOK_MODULE_TEST__,ae={title:"CosmozTooltip",component:"cosmoz-tooltip",tags:["autodocs"],argTypes:{heading:{control:"text",description:"Tooltip heading (bold text)"},description:{control:"text",description:"Tooltip description (secondary text)"},placement:{control:"select",options:["top","bottom","left","right","top center","bottom center"],description:"Position relative to trigger"},delay:{control:"number",description:"Delay before showing tooltip (ms)"}},args:{heading:"Tooltip Heading",description:"This is helpful information.",placement:"top",delay:300}},P={render:t=>a`
         <div style="padding: 4rem; text-align: center;">
             <cosmoz-tooltip
                 heading=${t.heading}
@@ -635,13 +635,13 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
                 <cosmoz-button>Hover me</cosmoz-button>
             </cosmoz-tooltip>
         </div>
-    `,play:async({canvas:t,step:e,userEvent:o})=>{await e("Shows tooltip on hover",async()=>{const n=t.getByShadowRole("button");await o.hover(n),await t.findByShadowText(/Tooltip Heading/u,{},{timeout:1e3})}),await e("Hides tooltip on mouse leave",async()=>{const n=t.getByShadowRole("button");await o.unhover(n),await ne(async()=>{const s=t.queryAllByShadowText(/Tooltip Heading/u);s.length>0&&k(s[0]).not.toBeVisible()},{timeout:500})})}},F={args:{heading:"Quick tip",description:""},render:t=>a`
+    `,play:async({canvas:t,step:e,userEvent:o})=>{await e("Shows tooltip on hover",async()=>{const n=t.getByShadowRole("button");await o.hover(n),await t.findByShadowText(/Tooltip Heading/u,{},{timeout:1e3})}),await e("Hides tooltip on mouse leave",async()=>{const n=t.getByShadowRole("button");await o.unhover(n),await ne(async()=>{const s=t.queryAllByShadowText(/Tooltip Heading/u);s.length>0&&C(s[0]).not.toBeVisible()},{timeout:500})})}},F={args:{heading:"Quick tip",description:""},render:t=>a`
         <div style="padding: 4rem; text-align: center;">
             <cosmoz-tooltip heading=${t.heading} placement=${t.placement}>
                 <cosmoz-button>Hover for heading only</cosmoz-button>
             </cosmoz-tooltip>
         </div>
-    `,play:async({canvas:t,step:e,userEvent:o})=>{await e("Shows tooltip with heading only",async()=>{const n=t.getByShadowRole("button");await o.hover(n),await t.findByShadowText(/Quick tip/u,{},{timeout:1e3})})}},R={args:{heading:"",description:"Just a simple description without a heading"},render:t=>a`
+    `,play:async({canvas:t,step:e,userEvent:o})=>{await e("Shows tooltip with heading only",async()=>{const n=t.getByShadowRole("button");await o.hover(n),await t.findByShadowText(/Quick tip/u,{},{timeout:1e3})})}},H={args:{heading:"",description:"Just a simple description without a heading"},render:t=>a`
         <div style="padding: 4rem; text-align: center;">
             <cosmoz-tooltip
                 description=${t.description}
@@ -650,7 +650,7 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
                 <cosmoz-button>Hover for description only</cosmoz-button>
             </cosmoz-tooltip>
         </div>
-    `},L={render:t=>a`
+    `},R={render:t=>a`
         <div style="padding: 4rem;">
             <div
                 style="display: flex; flex-direction: column; gap: 1rem; max-width: 300px;"
@@ -688,7 +688,7 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
                 </div>
             </div>
         </div>
-    `,play:async({canvas:t,step:e,userEvent:o})=>{await e("Shows tooltip when hovering span",async()=>{const n=t.getByText("Hover over this text");await o.hover(n),await t.findByShadowText(/Hover tooltip/u,{},{timeout:1e3})}),await e("Shows tooltip when hovering input",async()=>{const n=t.getByPlaceholderText("you@example.com");await o.hover(n),await t.findByShadowText(/Email format/u,{},{timeout:1e3})})}},O={render:()=>a`
+    `,play:async({canvas:t,step:e,userEvent:o})=>{await e("Shows tooltip when hovering span",async()=>{const n=t.getByText("Hover over this text");await o.hover(n),await t.findByShadowText(/Hover tooltip/u,{},{timeout:1e3})}),await e("Shows tooltip when hovering input",async()=>{const n=t.getByPlaceholderText("you@example.com");await o.hover(n),await t.findByShadowText(/Email format/u,{},{timeout:1e3})})}},L={render:()=>a`
         <div
             style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 4rem; padding: 6rem; place-items: center;"
         >
@@ -716,7 +716,7 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
                 <cosmoz-button>Bottom Center</cosmoz-button>
             </cosmoz-tooltip>
         </div>
-    `},I={args:{delay:0,heading:"Instant tooltip",description:"This appears immediately"},render:t=>a`
+    `},O={args:{delay:0,heading:"Instant tooltip",description:"This appears immediately"},render:t=>a`
         <div style="padding: 4rem; text-align: center;">
             <cosmoz-tooltip
                 heading=${t.heading}
@@ -740,7 +740,7 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
                 </div>
             </cosmoz-tooltip>
         </div>
-    `},N={render:t=>a`
+    `},I={render:t=>a`
         <div style="padding: 4rem;">
             <p>
                 Check out our
@@ -755,7 +755,7 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
                 for more information.
             </p>
         </div>
-    `},D={args:{delay:0,heading:"Focus test tooltip",description:"Should not appear on focus alone"},render:t=>a`
+    `},N={args:{delay:0,heading:"Focus test tooltip",description:"Should not appear on focus alone"},render:t=>a`
         <div style="padding: 4rem; text-align: center;">
             <cosmoz-tooltip
                 heading=${t.heading}
@@ -765,7 +765,7 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
                 <cosmoz-button>Focus me</cosmoz-button>
             </cosmoz-tooltip>
         </div>
-    `,play:async({canvas:t,step:e,userEvent:o})=>{await e("Should NOT show tooltip after hover out even with focus",async()=>{const n=t.getByShadowRole("button");await o.hover(n),await o.click(n),await o.unhover(n),await new Promise(i=>setTimeout(i,200));const s=t.queryAllByShadowText(/Focus test tooltip/u);s.length>0&&k(s[0]).not.toBeVisible()})}},j={args:{delay:0,heading:"For focus test tooltip",description:"Should not appear on focus alone"},render:t=>a`
+    `,play:async({canvas:t,step:e,userEvent:o})=>{await e("Should NOT show tooltip after hover out even with focus",async()=>{const n=t.getByShadowRole("button");await o.hover(n),await o.click(n),await o.unhover(n),await new Promise(i=>setTimeout(i,200));const s=t.queryAllByShadowText(/Focus test tooltip/u);s.length>0&&C(s[0]).not.toBeVisible()})}},D={args:{delay:0,heading:"For focus test tooltip",description:"Should not appear on focus alone"},render:t=>a`
         <div style="padding: 4rem; text-align: center;">
             <cosmoz-tooltip
                 for="focus-test-input"
@@ -776,7 +776,7 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
             ></cosmoz-tooltip>
             <input name="focus-test-input" placeholder="Focus test input" />
         </div>
-    `,play:async({canvas:t,step:e,userEvent:o})=>{await e("Should NOT show tooltip after hover out even with focus",async()=>{const n=t.getByPlaceholderText("Focus test input");await o.hover(n),await o.click(n),await o.unhover(n),await new Promise(i=>setTimeout(i,200));const s=t.queryAllByShadowText(/For focus test tooltip/u);s.length>0&&k(s[0]).not.toBeVisible()})}},V={args:{delay:0,heading:"Activate dismiss tooltip",description:"Should dismiss on activation"},render:t=>a`
+    `,play:async({canvas:t,step:e,userEvent:o})=>{await e("Should NOT show tooltip after hover out even with focus",async()=>{const n=t.getByPlaceholderText("Focus test input");await o.hover(n),await o.click(n),await o.unhover(n),await new Promise(i=>setTimeout(i,200));const s=t.queryAllByShadowText(/For focus test tooltip/u);s.length>0&&C(s[0]).not.toBeVisible()})}},j={args:{delay:0,heading:"Activate dismiss tooltip",description:"Should dismiss on activation"},render:t=>a`
         <div style="padding: 4rem; text-align: center;">
             <cosmoz-tooltip
                 heading=${t.heading}
@@ -786,7 +786,7 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
                 <button>Activate me</button>
             </cosmoz-tooltip>
         </div>
-    `,play:async({canvas:t,step:e,userEvent:o})=>{await e("Shows tooltip on keyboard focus",async()=>{await o.tab(),await t.findByShadowText(/Activate dismiss tooltip/u,{},{timeout:500})}),await e("Hides tooltip on Space activation",async()=>{await o.keyboard(" "),await new Promise(s=>setTimeout(s,200));const n=t.queryAllByShadowText(/Activate dismiss tooltip/u);n.length>0&&k(n[0]).not.toBeVisible()}),await e("Shows tooltip again on re-focus",async()=>{await o.tab(),await o.tab({shift:!0}),await t.findByShadowText(/Activate dismiss tooltip/u,{},{timeout:500})}),await e("Hides tooltip on Enter activation",async()=>{await o.keyboard("{Enter}"),await new Promise(s=>setTimeout(s,200));const n=t.queryAllByShadowText(/Activate dismiss tooltip/u);n.length>0&&k(n[0]).not.toBeVisible()})}},q={args:{delay:0,heading:"Input dismiss tooltip",description:"Should dismiss on any key"},render:t=>a`
+    `,play:async({canvas:t,step:e,userEvent:o})=>{await e("Shows tooltip on keyboard focus",async()=>{await o.tab(),await t.findByShadowText(/Activate dismiss tooltip/u,{},{timeout:500})}),await e("Hides tooltip on any keydown",async()=>{await o.keyboard("x"),await new Promise(s=>setTimeout(s,200));const n=t.queryAllByShadowText(/Activate dismiss tooltip/u);n.length>0&&C(n[0]).not.toBeVisible()})}},V={args:{delay:0,heading:"Input dismiss tooltip",description:"Should dismiss on any key"},render:t=>a`
         <div style="padding: 4rem; text-align: center;">
             <cosmoz-tooltip
                 for="activate-test-input"
@@ -797,7 +797,7 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
             ></cosmoz-tooltip>
             <input type="text" name="activate-test-input" placeholder="Type here" />
         </div>
-    `,play:async({canvas:t,step:e,userEvent:o})=>{await e("Shows tooltip on keyboard focus",async()=>{await o.tab(),await t.findByShadowText(/Input dismiss tooltip/u,{},{timeout:500})}),await e("Hides tooltip on any keypress",async()=>{await o.keyboard("a"),await new Promise(s=>setTimeout(s,200));const n=t.queryAllByShadowText(/Input dismiss tooltip/u);n.length>0&&k(n[0]).not.toBeVisible()})}},G={render:t=>a`
+    `,play:async({canvas:t,step:e,userEvent:o})=>{await e("Shows tooltip on keyboard focus",async()=>{await o.tab(),await t.findByShadowText(/Input dismiss tooltip/u,{},{timeout:500})}),await e("Hides tooltip on any keypress",async()=>{await o.keyboard("a"),await new Promise(s=>setTimeout(s,200));const n=t.queryAllByShadowText(/Input dismiss tooltip/u);n.length>0&&C(n[0]).not.toBeVisible()})}},G={render:t=>a`
         <div style="padding: 4rem; display: flex; gap: 1rem;">
             <cosmoz-tooltip
                 heading="Edit"
@@ -830,7 +830,7 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
                 </cosmoz-button>
             </cosmoz-tooltip>
         </div>
-    `};H.parameters={...H.parameters,docs:{...H.parameters?.docs,source:{originalSource:`{
+    `};P.parameters={...P.parameters,docs:{...P.parameters?.docs,source:{originalSource:`{
   render: args => html\`
         <div style="padding: 4rem; text-align: center;">
             <cosmoz-tooltip
@@ -868,7 +868,7 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
       });
     });
   }
-}`,...H.parameters?.docs?.source}}};F.parameters={...F.parameters,docs:{...F.parameters?.docs,source:{originalSource:`{
+}`,...P.parameters?.docs?.source}}};F.parameters={...F.parameters,docs:{...F.parameters?.docs,source:{originalSource:`{
   args: {
     heading: 'Quick tip',
     description: ''
@@ -893,7 +893,7 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
       });
     });
   }
-}`,...F.parameters?.docs?.source}}};R.parameters={...R.parameters,docs:{...R.parameters?.docs,source:{originalSource:`{
+}`,...F.parameters?.docs?.source}}};H.parameters={...H.parameters,docs:{...H.parameters?.docs,source:{originalSource:`{
   args: {
     heading: '',
     description: 'Just a simple description without a heading'
@@ -908,7 +908,7 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
             </cosmoz-tooltip>
         </div>
     \`
-}`,...R.parameters?.docs?.source}}};L.parameters={...L.parameters,docs:{...L.parameters?.docs,source:{originalSource:`{
+}`,...H.parameters?.docs?.source}}};R.parameters={...R.parameters,docs:{...R.parameters?.docs,source:{originalSource:`{
   render: args => html\`
         <div style="padding: 4rem;">
             <div
@@ -968,7 +968,7 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
       });
     });
   }
-}`,...L.parameters?.docs?.source}}};O.parameters={...O.parameters,docs:{...O.parameters?.docs,source:{originalSource:`{
+}`,...R.parameters?.docs?.source}}};L.parameters={...L.parameters,docs:{...L.parameters?.docs,source:{originalSource:`{
   render: () => html\`
         <div
             style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 4rem; padding: 6rem; place-items: center;"
@@ -998,7 +998,7 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
             </cosmoz-tooltip>
         </div>
     \`
-}`,...O.parameters?.docs?.source}}};I.parameters={...I.parameters,docs:{...I.parameters?.docs,source:{originalSource:`{
+}`,...L.parameters?.docs?.source}}};O.parameters={...O.parameters,docs:{...O.parameters?.docs,source:{originalSource:`{
   args: {
     delay: 0,
     heading: 'Instant tooltip',
@@ -1028,7 +1028,7 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
       });
     });
   }
-}`,...I.parameters?.docs?.source}}};M.parameters={...M.parameters,docs:{...M.parameters?.docs,source:{originalSource:`{
+}`,...O.parameters?.docs?.source}}};M.parameters={...M.parameters,docs:{...M.parameters?.docs,source:{originalSource:`{
   render: args => html\`
         <div style="padding: 4rem; text-align: center;">
             <cosmoz-tooltip placement=\${args.placement} delay=\${args.delay}>
@@ -1044,7 +1044,7 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
             </cosmoz-tooltip>
         </div>
     \`
-}`,...M.parameters?.docs?.source}}};N.parameters={...N.parameters,docs:{...N.parameters?.docs,source:{originalSource:`{
+}`,...M.parameters?.docs?.source}}};I.parameters={...I.parameters,docs:{...I.parameters?.docs,source:{originalSource:`{
   render: args => html\`
         <div style="padding: 4rem;">
             <p>
@@ -1061,7 +1061,7 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
             </p>
         </div>
     \`
-}`,...N.parameters?.docs?.source}}};D.parameters={...D.parameters,docs:{...D.parameters?.docs,source:{originalSource:`{
+}`,...I.parameters?.docs?.source}}};N.parameters={...N.parameters,docs:{...N.parameters?.docs,source:{originalSource:`{
   args: {
     delay: 0,
     heading: 'Focus test tooltip',
@@ -1099,7 +1099,7 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
       }
     });
   }
-}`,...D.parameters?.docs?.source}}};j.parameters={...j.parameters,docs:{...j.parameters?.docs,source:{originalSource:`{
+}`,...N.parameters?.docs?.source}}};D.parameters={...D.parameters,docs:{...D.parameters?.docs,source:{originalSource:`{
   args: {
     delay: 0,
     heading: 'For focus test tooltip',
@@ -1138,7 +1138,7 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
       }
     });
   }
-}`,...j.parameters?.docs?.source}}};V.parameters={...V.parameters,docs:{...V.parameters?.docs,source:{originalSource:`{
+}`,...D.parameters?.docs?.source}}};j.parameters={...j.parameters,docs:{...j.parameters?.docs,source:{originalSource:`{
   args: {
     delay: 0,
     heading: 'Activate dismiss tooltip',
@@ -1166,25 +1166,8 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
         timeout: 500
       });
     });
-    await step('Hides tooltip on Space activation', async () => {
-      await userEvent.keyboard(' ');
-      await new Promise(resolve => setTimeout(resolve, 200));
-      const texts = canvas.queryAllByShadowText(/Activate dismiss tooltip/u);
-      if (texts.length > 0) {
-        expect(texts[0]).not.toBeVisible();
-      }
-    });
-    await step('Shows tooltip again on re-focus', async () => {
-      await userEvent.tab();
-      await userEvent.tab({
-        shift: true
-      });
-      await canvas.findByShadowText(/Activate dismiss tooltip/u, {}, {
-        timeout: 500
-      });
-    });
-    await step('Hides tooltip on Enter activation', async () => {
-      await userEvent.keyboard('{Enter}');
+    await step('Hides tooltip on any keydown', async () => {
+      await userEvent.keyboard('x');
       await new Promise(resolve => setTimeout(resolve, 200));
       const texts = canvas.queryAllByShadowText(/Activate dismiss tooltip/u);
       if (texts.length > 0) {
@@ -1192,7 +1175,7 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
       }
     });
   }
-}`,...V.parameters?.docs?.source}}};q.parameters={...q.parameters,docs:{...q.parameters?.docs,source:{originalSource:`{
+}`,...j.parameters?.docs?.source}}};V.parameters={...V.parameters,docs:{...V.parameters?.docs,source:{originalSource:`{
   args: {
     delay: 0,
     heading: 'Input dismiss tooltip',
@@ -1230,7 +1213,7 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
       }
     });
   }
-}`,...q.parameters?.docs?.source}}};G.parameters={...G.parameters,docs:{...G.parameters?.docs,source:{originalSource:`{
+}`,...V.parameters?.docs?.source}}};G.parameters={...G.parameters,docs:{...G.parameters?.docs,source:{originalSource:`{
   render: args => html\`
         <div style="padding: 4rem; display: flex; gap: 1rem;">
             <cosmoz-tooltip
@@ -1274,4 +1257,4 @@ import{r as zt,D as mt,b as a,A as J,w as nt}from"./iframe-XBpqF6rJ.js";import".
             </cosmoz-tooltip>
         </div>
     \`
-}`,...G.parameters?.docs?.source}}};const ce=["Basic","HeadingOnly","DescriptionOnly","ForAttribute","Placements","CustomDelay","CustomContent","OnLinks","FocusWithoutHover","ForAttributeFocusWithoutHover","KeyboardActivateDismiss","ForAttributeKeyboardActivateDismiss","OnIcons"];export{H as Basic,M as CustomContent,I as CustomDelay,R as DescriptionOnly,D as FocusWithoutHover,L as ForAttribute,j as ForAttributeFocusWithoutHover,q as ForAttributeKeyboardActivateDismiss,F as HeadingOnly,V as KeyboardActivateDismiss,G as OnIcons,N as OnLinks,O as Placements,ce as __namedExportsOrder,re as default};
+}`,...G.parameters?.docs?.source}}};const re=["Basic","HeadingOnly","DescriptionOnly","ForAttribute","Placements","CustomDelay","CustomContent","OnLinks","FocusWithoutHover","ForAttributeFocusWithoutHover","KeyboardActivateDismiss","ForAttributeKeyboardActivateDismiss","OnIcons"];export{P as Basic,M as CustomContent,O as CustomDelay,H as DescriptionOnly,N as FocusWithoutHover,R as ForAttribute,D as ForAttributeFocusWithoutHover,V as ForAttributeKeyboardActivateDismiss,F as HeadingOnly,j as KeyboardActivateDismiss,G as OnIcons,I as OnLinks,L as Placements,re as __namedExportsOrder,ae as default};

@@ -58,16 +58,13 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 		popover.current?.hidePopover();
 	}, []);
 
-	// Pointer events don't bubble, so pointerenter/pointerleave on <slot>
-	// won't fire when the pointer leaves a slotted child in a nested shadow
-	// root. Listen on the host element instead, using pointerover/pointerout
-	// which DO bubble through shadow DOM boundaries.
+	// Use pointerover/pointerout on the host — they bubble through shadow DOM,
+	// unlike pointerenter/pointerleave on <slot>.
 	useEffect(() => {
 		if (forAttr) return;
 
 		const onPointerOut = (e: PointerEvent) => {
 			const related = e.relatedTarget as Element | null;
-			// Still inside the host element? Ignore.
 			if (related && host.contains(related)) return;
 			hide();
 		};

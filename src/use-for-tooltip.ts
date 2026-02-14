@@ -81,7 +81,6 @@ export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
 		const selector = `[name="${forAttr}"]`;
 		const anchorName = `--tooltip-anchor-${forAttr}`;
 		let showTimeout: number | undefined;
-		let hoveredTarget: Element | null = null;
 
 		const showForTarget = (target: Element) => {
 			clearTimeout(showTimeout);
@@ -102,7 +101,6 @@ export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
 		const onPointerover = (e: Event) => {
 			const target = (e.target as Element).closest?.(selector);
 			if (!target) return;
-			hoveredTarget = target;
 			showForTarget(target);
 		};
 
@@ -112,14 +110,12 @@ export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
 			const related = (e as PointerEvent).relatedTarget as Element | null;
 			// Still inside the target element? Ignore.
 			if (related && target.contains(related)) return;
-			hoveredTarget = null;
 			hidePopover();
 		};
 
 		const onFocusin = (e: Event) => {
 			const target = (e.target as Element).closest?.(selector);
 			if (!target) return;
-			if (hoveredTarget === target) return;
 			showForTarget(target);
 		};
 
@@ -143,7 +139,6 @@ export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
 
 		return () => {
 			clearTimeout(showTimeout);
-			hoveredTarget = null;
 			root.removeEventListener('pointerover', onPointerover);
 			root.removeEventListener('pointerout', onPointerout);
 			root.removeEventListener('focusin', onFocusin);

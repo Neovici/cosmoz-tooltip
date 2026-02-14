@@ -1,6 +1,6 @@
 import { normalize } from '@neovici/cosmoz-tokens/normalize';
 import { component, css, useCallback, useRef } from '@pionjs/pion';
-import { html } from 'lit-html';
+import { html, nothing } from 'lit-html';
 import { ref } from 'lit-html/directives/ref.js';
 import { when } from 'lit-html/directives/when.js';
 import './cosmoz-tooltip-content.js';
@@ -62,7 +62,7 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 	useForTooltip(host, { for: forAttr, heading, description, placement, delay });
 
 	// For attribute mode: nothing to render in shadow DOM
-	if (forAttr) return html``;
+	if (forAttr) return nothing;
 
 	// Wrapping mode: render slot + popover in shadow DOM
 	return html`

@@ -1,3 +1,9 @@
+## [1.0.2](https://github.com/Neovici/cosmoz-tooltip/compare/v1.0.1...v1.0.2) (2026-02-14)
+
+### Bug Fixes
+
+* prevent tooltip from appearing when element retains focus after pointer leaves ([#9](https://github.com/Neovici/cosmoz-tooltip/issues/9)) ([c838bee](https://github.com/Neovici/cosmoz-tooltip/commit/c838beeeb4276a2d6d3b4a6619f72bdce62345f5))
+
 ## [1.0.1](https://github.com/Neovici/cosmoz-tooltip/compare/v1.0.0...v1.0.1) (2026-02-06)
 
 ### Bug Fixes

@@ -125,9 +125,7 @@ export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
 			hidePopover();
 		};
 
-		const onKeydown = (e: Event) => {
-			const target = (e.target as Element).closest?.(selector);
-			if (!target) return;
+		const onKeydown = () => {
 			hidePopover();
 		};
 

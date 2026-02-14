@@ -45,7 +45,6 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 	} = host;
 	const popover = useRef<HTMLElement>();
 	const timeoutId = useRef<number>();
-
 	const show = useCallback(() => {
 		clearTimeout(timeoutId.current);
 		timeoutId.current = window.setTimeout(() => {
@@ -86,7 +85,7 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 
 	// Wrapping mode: render slot + popover in shadow DOM
 	return html`
-		<slot @focusin=${show} @focusout=${hide}></slot>
+		<slot @focusin=${show} @focusout=${hide} @keydown=${hide}></slot>
 		<div
 			class="cosmoz-tooltip-popover"
 			popover="manual"

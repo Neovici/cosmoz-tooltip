@@ -362,6 +362,83 @@ export const ForAttributeFocusWithoutHover: Story = {
 	},
 };
 
+export const KeyboardActivateDismiss: Story = {
+	args: {
+		delay: 0,
+		heading: 'Activate dismiss tooltip',
+		description: 'Should dismiss on activation',
+	},
+	render: (args) => html`
+		<div style="padding: 4rem; text-align: center;">
+			<cosmoz-tooltip
+				heading=${args.heading}
+				description=${args.description}
+				delay=${args.delay}
+			>
+				<button>Activate me</button>
+			</cosmoz-tooltip>
+		</div>
+	`,
+	play: async ({ canvas, step, userEvent }) => {
+		await step('Shows tooltip on keyboard focus', async () => {
+			await userEvent.tab();
+			await canvas.findByShadowText(
+				/Activate dismiss tooltip/u,
+				{},
+				{ timeout: 500 },
+			);
+		});
+
+		await step('Hides tooltip on any keydown', async () => {
+			await userEvent.keyboard('x');
+			await new Promise((resolve) => setTimeout(resolve, 200));
+			const texts = canvas.queryAllByShadowText(/Activate dismiss tooltip/u);
+			if (texts.length > 0) {
+				expect(texts[0]).not.toBeVisible();
+			}
+		});
+	},
+};
+
+export const ForAttributeKeyboardActivateDismiss: Story = {
+	args: {
+		delay: 0,
+		heading: 'Input dismiss tooltip',
+		description: 'Should dismiss on any key',
+	},
+	render: (args) => html`
+		<div style="padding: 4rem; text-align: center;">
+			<cosmoz-tooltip
+				for="activate-test-input"
+				heading=${args.heading}
+				description=${args.description}
+				placement=${args.placement}
+				delay=${args.delay}
+			></cosmoz-tooltip>
+			<input type="text" name="activate-test-input" placeholder="Type here" />
+		</div>
+	`,
+	play: async ({ canvas, step, userEvent }) => {
+		await step('Shows tooltip on keyboard focus', async () => {
+			await userEvent.tab();
+			await canvas.findByShadowText(
+				/Input dismiss tooltip/u,
+				{},
+				{ timeout: 500 },
+			);
+		});
+
+		await step('Hides tooltip on any keypress', async () => {
+			await userEvent.keyboard('a');
+			await new Promise((resolve) => setTimeout(resolve, 200));
+			const texts = canvas.queryAllByShadowText(/Input dismiss tooltip/u);
+			if (texts.length > 0) {
+				expect(texts[0]).not.toBeVisible();
+			}
+		});
+	},
+};
+
 export const OnIcons: Story = {
 	render: (args) => html`
 		<div style="padding: 4rem; display: flex; gap: 1rem;">

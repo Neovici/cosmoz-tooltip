@@ -125,10 +125,15 @@ export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
 			hidePopover();
 		};
 
+		const onKeydown = () => {
+			hidePopover();
+		};
+
 		root.addEventListener('pointerover', onPointerover);
 		root.addEventListener('pointerout', onPointerout);
 		root.addEventListener('focusin', onFocusin);
 		root.addEventListener('focusout', onFocusout);
+		root.addEventListener('keydown', onKeydown);
 
 		return () => {
 			clearTimeout(showTimeout);
@@ -136,6 +141,7 @@ export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
 			root.removeEventListener('pointerout', onPointerout);
 			root.removeEventListener('focusin', onFocusin);
 			root.removeEventListener('focusout', onFocusout);
+			root.removeEventListener('keydown', onKeydown);
 			popoverEl.hidePopover();
 			popoverEl.remove();
 			popover.current = undefined;

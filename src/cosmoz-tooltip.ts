@@ -1,5 +1,5 @@
 import { normalize } from '@neovici/cosmoz-tokens/normalize';
-import { component, css, useCallback, useRef } from '@pionjs/pion';
+import { component, css, useCallback, useEffect, useRef } from '@pionjs/pion';
 import { html, nothing } from 'lit-html';
 import { ref } from 'lit-html/directives/ref.js';
 import { when } from 'lit-html/directives/when.js';
@@ -58,6 +58,26 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 		popover.current?.hidePopover();
 	}, []);
 
+	// Use pointerover/pointerout on the host — they bubble through shadow DOM,
+	// unlike pointerenter/pointerleave on <slot>.
+	useEffect(() => {
+		if (forAttr) return;
+
+		const onPointerOut = (e: PointerEvent) => {
+			const related = e.relatedTarget as Element | null;
+			if (related && host.contains(related)) return;
+			hide();
+		};
+
+		host.addEventListener('pointerover', show);
+		host.addEventListener('pointerout', onPointerOut as EventListener);
+
+		return () => {
+			host.removeEventListener('pointerover', show);
+			host.removeEventListener('pointerout', onPointerOut as EventListener);
+		};
+	}, [forAttr, show, hide]);
+
 	// Delegate for="" mode to hook
 	useForTooltip(host, { for: forAttr, heading, description, placement, delay });
 
@@ -66,12 +86,7 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 
 	// Wrapping mode: render slot + popover in shadow DOM
 	return html`
-		<slot
-			@pointerenter=${show}
-			@pointerleave=${hide}
-			@focusin=${show}
-			@focusout=${hide}
-		></slot>
+		<slot @focusin=${show} @focusout=${hide}></slot>
 		<div
 			class="cosmoz-tooltip-popover"
 			popover="manual"

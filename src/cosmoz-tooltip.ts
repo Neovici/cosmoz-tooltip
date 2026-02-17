@@ -33,6 +33,7 @@ interface TooltipProps {
 	for?: string;
 	placement?: string;
 	delay?: number;
+	disabled?: boolean;
 }
 
 const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
@@ -42,16 +43,25 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 		for: forAttr,
 		placement = 'top',
 		delay = 300,
+		disabled = false,
 	} = host;
 	const popover = useRef<HTMLElement>();
 	const timeoutId = useRef<number>();
 
 	const show = useCallback(() => {
+		if (disabled) return;
 		clearTimeout(timeoutId.current);
 		timeoutId.current = window.setTimeout(() => {
 			popover.current?.showPopover();
 		}, delay);
-	}, [delay]);
+	}, [delay, disabled]);
+
+	// Immediately hide if disabled while visible
+	useEffect(() => {
+		if (!disabled) return;
+		clearTimeout(timeoutId.current);
+		popover.current?.hidePopover();
+	}, [disabled]);
 
 	const hide = useCallback(() => {
 		clearTimeout(timeoutId.current);
@@ -79,7 +89,14 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 	}, [forAttr, show, hide]);
 
 	// Delegate for="" mode to hook
-	useForTooltip(host, { for: forAttr, heading, description, placement, delay });
+	useForTooltip(host, {
+		for: forAttr,
+		heading,
+		description,
+		placement,
+		delay,
+		disabled,
+	});
 
 	// For attribute mode: nothing to render in shadow DOM
 	if (forAttr) return nothing;
@@ -112,7 +129,14 @@ customElements.define(
 	'cosmoz-tooltip',
 	component<TooltipProps>(CosmozTooltip, {
 		styleSheets: [normalize, popoverStyle, style],
-		observedAttributes: ['heading', 'description', 'for', 'placement', 'delay'],
+		observedAttributes: [
+			'heading',
+			'description',
+			'for',
+			'placement',
+			'delay',
+			'disabled',
+		],
 	}),
 );
 

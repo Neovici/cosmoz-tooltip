@@ -398,3 +398,81 @@ export const OnIcons: Story = {
 		</div>
 	`,
 };
+
+export const Disabled: Story = {
+	args: {
+		delay: 0,
+		heading: 'Disabled tooltip',
+		description: 'This should not appear',
+	},
+	render: (args) => html`
+		<div style="padding: 4rem; text-align: center;">
+			<cosmoz-tooltip
+				heading=${args.heading}
+				description=${args.description}
+				delay=${args.delay}
+				disabled
+			>
+				<cosmoz-button>Hover me (disabled tooltip)</cosmoz-button>
+			</cosmoz-tooltip>
+		</div>
+	`,
+	play: async ({ canvas, step, userEvent }) => {
+		await step('Should NOT show tooltip on hover when disabled', async () => {
+			const button = canvas.getByShadowRole('button');
+			await userEvent.hover(button);
+
+			// Wait beyond the delay
+			await new Promise((resolve) => setTimeout(resolve, 200));
+
+			const tooltipTexts = canvas.queryAllByShadowText(/Disabled tooltip/u);
+			if (tooltipTexts.length > 0) {
+				expect(tooltipTexts[0]).not.toBeVisible();
+			}
+		});
+	},
+};
+
+export const DisabledForAttribute: Story = {
+	args: {
+		delay: 0,
+		heading: 'Disabled for tooltip',
+		description: 'This should not appear',
+	},
+	render: (args) => html`
+		<div style="padding: 4rem; text-align: center;">
+			<cosmoz-tooltip
+				for="disabled-target"
+				heading=${args.heading}
+				description=${args.description}
+				placement=${args.placement}
+				delay=${args.delay}
+				disabled
+			></cosmoz-tooltip>
+			<input
+				name="disabled-target"
+				placeholder="Hover me (disabled for tooltip)"
+			/>
+		</div>
+	`,
+	play: async ({ canvas, step, userEvent }) => {
+		await step(
+			'Should NOT show tooltip on hover when disabled (for mode)',
+			async () => {
+				const input = canvas.getByPlaceholderText(
+					'Hover me (disabled for tooltip)',
+				);
+				await userEvent.hover(input);
+
+				// Wait beyond the delay
+				await new Promise((resolve) => setTimeout(resolve, 200));
+
+				const tooltipTexts =
+					canvas.queryAllByShadowText(/Disabled for tooltip/u);
+				if (tooltipTexts.length > 0) {
+					expect(tooltipTexts[0]).not.toBeVisible();
+				}
+			},
+		);
+	},
+};

@@ -52,13 +52,14 @@ Target elements by their `name` attribute within the same document/shadow root:
 
 ## API
 
-| Attribute     | Type   | Default | Description                                                               |
-| ------------- | ------ | ------- | ------------------------------------------------------------------------- |
-| `heading`     | string | -       | Bold heading text                                                         |
-| `description` | string | -       | Secondary description text                                                |
-| `for`         | string | -       | Target element's `name` attribute                                         |
-| `placement`   | string | `top`   | Position: `top`, `bottom`, `left`, `right`, `top center`, `bottom center` |
-| `delay`       | number | `300`   | Delay before showing tooltip (ms)                                         |
+| Attribute     | Type    | Default | Description                                                               |
+| ------------- | ------- | ------- | ------------------------------------------------------------------------- |
+| `heading`     | string  | -       | Bold heading text                                                         |
+| `description` | string  | -       | Secondary description text                                                |
+| `for`         | string  | -       | Target element's `name` attribute                                         |
+| `placement`   | string  | `top`   | Position: `top`, `bottom`, `left`, `right`, `top center`, `bottom center` |
+| `delay`       | number  | `300`   | Delay before showing tooltip (ms)                                         |
+| `disabled`    | boolean | `false` | When present, prevents the tooltip from showing                           |
 
 ### Slots
 

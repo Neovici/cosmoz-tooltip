@@ -19,6 +19,7 @@ interface ForTooltipOptions {
 	description?: string;
 	placement?: string;
 	delay?: number;
+	disabled?: boolean;
 }
 
 /**
@@ -50,6 +51,7 @@ export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
 		description,
 		placement = 'top',
 		delay = 300,
+		disabled = false,
 	} = opts;
 	const popover = useRef<HTMLElement>();
 
@@ -83,6 +85,7 @@ export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
 		let showTimeout: number | undefined;
 
 		const showForTarget = (target: Element) => {
+			if (disabled) return;
 			clearTimeout(showTimeout);
 
 			// Set CSS anchor positioning
@@ -140,11 +143,17 @@ export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
 			popoverEl.remove();
 			popover.current = undefined;
 		};
-	}, [forAttr, placement, delay]);
+	}, [forAttr, placement, delay, disabled]);
 
 	// Re-render light-DOM popover content when heading/description change
 	useEffect(() => {
 		if (!forAttr || !popover.current) return;
 		renderContent(popover.current, heading, description);
 	}, [heading, description, forAttr]);
+
+	// Immediately hide if disabled while visible (for="" mode)
+	useEffect(() => {
+		if (!disabled || !popover.current) return;
+		popover.current.hidePopover();
+	}, [disabled]);
 };

@@ -58,10 +58,9 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 
 	// Immediately hide if disabled while visible
 	useEffect(() => {
-		if (disabled) {
-			clearTimeout(timeoutId.current);
-			popover.current?.hidePopover();
-		}
+		if (!disabled) return;
+		clearTimeout(timeoutId.current);
+		popover.current?.hidePopover();
 	}, [disabled]);
 
 	const hide = useCallback(() => {

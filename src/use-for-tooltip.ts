@@ -153,8 +153,7 @@ export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
 
 	// Immediately hide if disabled while visible (for="" mode)
 	useEffect(() => {
-		if (disabled && popover.current) {
-			popover.current.hidePopover();
-		}
+		if (!disabled || !popover.current) return;
+		popover.current.hidePopover();
 	}, [disabled]);
 };

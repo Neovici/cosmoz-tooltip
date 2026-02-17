@@ -1,3 +1,9 @@
+## [1.1.0](https://github.com/Neovici/cosmoz-tooltip/compare/v1.0.2...v1.1.0) (2026-02-17)
+
+### Features
+
+* add `disabled` attribute to prevent tooltip from showing ([#12](https://github.com/Neovici/cosmoz-tooltip/issues/12)) ([7fd0b5f](https://github.com/Neovici/cosmoz-tooltip/commit/7fd0b5fb5f038fd4f2b0cd3d7d2d9fa1b2e48f1e))
+
 ## [1.0.2](https://github.com/Neovici/cosmoz-tooltip/compare/v1.0.1...v1.0.2) (2026-02-14)
 
 ### Bug Fixes

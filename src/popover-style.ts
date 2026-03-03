@@ -28,12 +28,25 @@ export const popoverStyle = sheet(css`
 
 		/* Reset popover defaults */
 		border: none;
-		padding: calc(var(--cz-spacing) * 2) calc(var(--cz-spacing) * 3);
-		background: var(--cz-color-gray-900);
-		color: var(--cz-color-white);
-		border-radius: var(--cz-radius-sm);
-		max-width: 20rem;
-		box-shadow: var(--cz-shadow-lg);
+		white-space: normal;
+		padding: var(--cosmoz-tooltip-padding, calc(var(--cz-spacing) * 2) calc(var(--cz-spacing) * 3));
+		border-radius: var(--cosmoz-tooltip-border-radius, var(--cz-radius-sm));
+		max-width: var(--cosmoz-tooltips-max-width, 20rem));
+		box-shadow: var(--cosmoz-tooltip-box-shadow, var(--cz-shadow-lg));
+		background: var(--cosmoz-tooltip-bg-color, var(--cz-color-gray-900));
+		font-size: var(--cosmoz-tooltip-font-size, var(--cz-text-xs));
+		font-weight: var(--cosmoz-tooltip-font-weight, 400);
+		line-height: var(--cosmoz-tooltip-line-height, var(--cz-text-xs-line-height));
+		color: var(--cosmoz-tooltip-text-color, var(--cz-color-white));
+
+		cosmoz-tooltip-content strong {
+			font-weight: var(
+	 			--cosmoz-tooltip-heading-font-weight,
+	 			var(--cz-font-weight-semibold)
+	 		);
+
+			color: var(--cosmoz-tooltip-heading-color);
+		}
 
 		/* Animation - open state */
 		opacity: 1;

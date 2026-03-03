@@ -6,20 +6,16 @@ const style = css`
 	:host {
 		display: flex;
 		flex-direction: column;
-		gap: var(--cz-spacing);
+		gap: var(--cosmoz-tooltip-gap, var(--cz-spacing));
 		font-family: var(--cz-font-body);
-		font-size: var(--cz-text-xs);
-		line-height: var(--cz-text-xs-line-height);
 	}
 
 	::slotted([slot='heading']) {
-		font-weight: var(--cz-font-weight-semibold);
 		display: block;
 	}
 
 	::slotted([slot='description']) {
 		margin: 0;
-		color: var(--cz-color-gray-300);
 	}
 `;
 

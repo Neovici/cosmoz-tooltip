@@ -1,3 +1,9 @@
+## [1.2.0](https://github.com/Neovici/cosmoz-tooltip/compare/v1.1.0...v1.2.0) (2026-03-03)
+
+### Features
+
+* **styling:** improve styling ([8f8930c](https://github.com/Neovici/cosmoz-tooltip/commit/8f8930c27ca98581d06bbbfc611dd344abbedc43))
+
 ## [1.1.0](https://github.com/Neovici/cosmoz-tooltip/compare/v1.0.2...v1.1.0) (2026-02-17)
 
 ### Features

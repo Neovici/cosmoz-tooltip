@@ -1,3 +1,9 @@
+## [1.2.1](https://github.com/Neovici/cosmoz-tooltip/compare/v1.2.0...v1.2.1) (2026-03-20)
+
+### Bug Fixes
+
+* css syntax of max-width ([#13](https://github.com/Neovici/cosmoz-tooltip/issues/13)) ([3e92b01](https://github.com/Neovici/cosmoz-tooltip/commit/3e92b01af2f924e2cfbdaf500d33e2ffc02760cb))
+
 ## [1.2.0](https://github.com/Neovici/cosmoz-tooltip/compare/v1.1.0...v1.2.0) (2026-03-03)
 
 ### Features

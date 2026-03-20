@@ -31,7 +31,7 @@ export const popoverStyle = sheet(css`
 		white-space: normal;
 		padding: var(--cosmoz-tooltip-padding, calc(var(--cz-spacing) * 2) calc(var(--cz-spacing) * 3));
 		border-radius: var(--cosmoz-tooltip-border-radius, var(--cz-radius-sm));
-		max-width: var(--cosmoz-tooltips-max-width, 20rem));
+		max-width: var(--cosmoz-tooltips-max-width, 20rem);
 		box-shadow: var(--cosmoz-tooltip-box-shadow, var(--cz-shadow-lg));
 		background: var(--cosmoz-tooltip-bg-color, var(--cz-color-gray-900));
 		font-size: var(--cosmoz-tooltip-font-size, var(--cz-text-xs));

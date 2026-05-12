@@ -1,39 +1,12 @@
 import { normalize } from '@neovici/cosmoz-tokens/normalize';
-import {
-	component,
-	css,
-	useCallback,
-	useEffect,
-	useRef,
-	useState,
-} from '@pionjs/pion';
+import { component, css, useCallback, useEffect, useRef } from '@pionjs/pion';
 import { html, nothing } from 'lit-html';
 import { ref } from 'lit-html/directives/ref.js';
 import { when } from 'lit-html/directives/when.js';
 import './cosmoz-tooltip-content.js';
 import { popoverStyle } from './popover-style.js';
 import { useForTooltip } from './use-for-tooltip.js';
-
-const useHasSlottedContent = (slotRef: {
-	current: HTMLSlotElement | undefined;
-}): boolean => {
-	const [hasContent, setHasContent] = useState(false);
-
-	useEffect(() => {
-		const slot = slotRef.current;
-		if (!slot) return;
-
-		const check = () => {
-			setHasContent(slot.assignedElements().length > 0);
-		};
-
-		check();
-		slot.addEventListener('slotchange', check);
-		return () => slot.removeEventListener('slotchange', check);
-	}, [slotRef]);
-
-	return hasContent;
-};
+import { useHasSlottedContent } from './use-has-slotted-content.js';
 
 /**
  * Host-specific styles (shadow DOM only).
@@ -138,9 +111,7 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 			<slot></slot>
 			<slot
 				name="content"
-				${ref((el) => {
-					contentSlotRef.current = el as HTMLSlotElement | undefined;
-				})}
+				${ref((el) => (contentSlotRef.current = el as HTMLSlotElement))}
 				hidden
 			></slot>
 		`;
@@ -154,9 +125,7 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 			popover="manual"
 			role="tooltip"
 			style="position-area: ${placement}"
-			${ref((el) => {
-				popover.current = el as HTMLElement | undefined;
-			})}
+			${ref((el) => (popover.current = el as HTMLElement))}
 		>
 			<cosmoz-tooltip-content>
 				${when(heading, () => html`<strong slot="heading">${heading}</strong>`)}
@@ -166,9 +135,7 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 				)}
 				<slot
 					name="content"
-					${ref((el) => {
-						contentSlotRef.current = el as HTMLSlotElement | undefined;
-					})}
+					${ref((el) => (contentSlotRef.current = el as HTMLSlotElement))}
 				></slot>
 			</cosmoz-tooltip-content>
 		</div>

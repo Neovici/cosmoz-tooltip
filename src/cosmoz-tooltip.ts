@@ -51,14 +51,15 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 	const contentSlotRef = useRef<HTMLSlotElement>();
 	const hasSlottedContent = useHasSlottedContent(contentSlotRef);
 	const hasContent = !!(heading || description || hasSlottedContent);
+	const shouldRenderTooltip = hasContent && !disabled;
 
 	const show = useCallback(() => {
-		if (disabled || !hasContent) return;
+		if (!shouldRenderTooltip) return;
 		clearTimeout(timeoutId.current);
 		timeoutId.current = window.setTimeout(() => {
 			popover.current?.showPopover();
 		}, delay);
-	}, [delay, disabled, hasContent]);
+	}, [delay, shouldRenderTooltip]);
 
 	// Immediately hide if disabled while visible
 	useEffect(() => {
@@ -105,8 +106,8 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 	// For attribute mode: nothing to render in shadow DOM
 	if (forAttr) return nothing;
 
-	// Pass-through when no content
-	if (!hasContent) {
+	// Pass-through when disabled or no content
+	if (!shouldRenderTooltip) {
 		return html`
 			<slot></slot>
 			<slot name="content" ${ref(contentSlotRef)} hidden></slot>

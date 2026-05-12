@@ -54,10 +54,11 @@ export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
 		disabled = false,
 	} = opts;
 	const popover = useRef<HTMLElement>();
+	const hasContent = !!(heading || description);
 
 	// eslint-disable-next-line max-statements
 	useEffect(() => {
-		if (!forAttr) return;
+		if (!forAttr || !hasContent) return;
 
 		const root = host.getRootNode() as Document | ShadowRoot;
 
@@ -143,7 +144,7 @@ export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
 			popoverEl.remove();
 			popover.current = undefined;
 		};
-	}, [forAttr, placement, delay, disabled]);
+	}, [forAttr, placement, delay, disabled, hasContent]);
 
 	// Re-render light-DOM popover content when heading/description change
 	useEffect(() => {

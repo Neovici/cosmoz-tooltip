@@ -1,11 +1,39 @@
 import { normalize } from '@neovici/cosmoz-tokens/normalize';
-import { component, css, useCallback, useEffect, useRef } from '@pionjs/pion';
+import {
+	component,
+	css,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from '@pionjs/pion';
 import { html, nothing } from 'lit-html';
 import { ref } from 'lit-html/directives/ref.js';
 import { when } from 'lit-html/directives/when.js';
 import './cosmoz-tooltip-content.js';
 import { popoverStyle } from './popover-style.js';
 import { useForTooltip } from './use-for-tooltip.js';
+
+const useHasSlottedContent = (slotRef: {
+	current: HTMLSlotElement | undefined;
+}): boolean => {
+	const [hasContent, setHasContent] = useState(false);
+
+	useEffect(() => {
+		const slot = slotRef.current;
+		if (!slot) return;
+
+		const check = () => {
+			setHasContent(slot.assignedElements().length > 0);
+		};
+
+		check();
+		slot.addEventListener('slotchange', check);
+		return () => slot.removeEventListener('slotchange', check);
+	}, [slotRef]);
+
+	return hasContent;
+};
 
 /**
  * Host-specific styles (shadow DOM only).
@@ -47,14 +75,17 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 	} = host;
 	const popover = useRef<HTMLElement>();
 	const timeoutId = useRef<number>();
+	const contentSlotRef = useRef<HTMLSlotElement>();
+	const hasSlottedContent = useHasSlottedContent(contentSlotRef);
+	const hasContent = !!(heading || description || hasSlottedContent);
 
 	const show = useCallback(() => {
-		if (disabled) return;
+		if (disabled || !hasContent) return;
 		clearTimeout(timeoutId.current);
 		timeoutId.current = window.setTimeout(() => {
 			popover.current?.showPopover();
 		}, delay);
-	}, [delay, disabled]);
+	}, [delay, disabled, hasContent]);
 
 	// Immediately hide if disabled while visible
 	useEffect(() => {
@@ -101,6 +132,20 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 	// For attribute mode: nothing to render in shadow DOM
 	if (forAttr) return nothing;
 
+	// Pass-through when no content
+	if (!hasContent) {
+		return html`
+			<slot></slot>
+			<slot
+				name="content"
+				${ref((el) => {
+					contentSlotRef.current = el as HTMLSlotElement | undefined;
+				})}
+				hidden
+			></slot>
+		`;
+	}
+
 	// Wrapping mode: render slot + popover in shadow DOM
 	return html`
 		<slot @focusin=${show} @focusout=${hide}></slot>
@@ -119,7 +164,12 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 					description,
 					() => html`<p slot="description">${description}</p>`,
 				)}
-				<slot name="content"></slot>
+				<slot
+					name="content"
+					${ref((el) => {
+						contentSlotRef.current = el as HTMLSlotElement | undefined;
+					})}
+				></slot>
 			</cosmoz-tooltip-content>
 		</div>
 	`;

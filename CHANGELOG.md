@@ -1,3 +1,9 @@
+## [1.3.0](https://github.com/Neovici/cosmoz-tooltip/compare/v1.2.2...v1.3.0) (2026-05-12)
+
+### Features
+
+* pass-through when no content ([#15](https://github.com/Neovici/cosmoz-tooltip/issues/15)) ([ed9cb21](https://github.com/Neovici/cosmoz-tooltip/commit/ed9cb21d90c08508d33d1095199132bd3168a885))
+
 ## [1.2.2](https://github.com/Neovici/cosmoz-tooltip/compare/v1.2.1...v1.2.2) (2026-05-12)
 
 ### Bug Fixes

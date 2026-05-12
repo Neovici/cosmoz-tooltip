@@ -109,11 +109,7 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 	if (!hasContent) {
 		return html`
 			<slot></slot>
-			<slot
-				name="content"
-				${ref((el) => (contentSlotRef.current = el as HTMLSlotElement))}
-				hidden
-			></slot>
+			<slot name="content" ${ref(contentSlotRef)} hidden></slot>
 		`;
 	}
 
@@ -125,7 +121,7 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 			popover="manual"
 			role="tooltip"
 			style="position-area: ${placement}"
-			${ref((el) => (popover.current = el as HTMLElement))}
+			${ref(popover)}
 		>
 			<cosmoz-tooltip-content>
 				${when(heading, () => html`<strong slot="heading">${heading}</strong>`)}
@@ -133,10 +129,7 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 					description,
 					() => html`<p slot="description">${description}</p>`,
 				)}
-				<slot
-					name="content"
-					${ref((el) => (contentSlotRef.current = el as HTMLSlotElement))}
-				></slot>
+				<slot name="content" ${ref(contentSlotRef)}></slot>
 			</cosmoz-tooltip-content>
 		</div>
 	`;

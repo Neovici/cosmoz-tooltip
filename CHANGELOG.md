@@ -1,3 +1,9 @@
+## [1.2.2](https://github.com/Neovici/cosmoz-tooltip/compare/v1.2.1...v1.2.2) (2026-05-12)
+
+### Bug Fixes
+
+* removed s at end of tooltip(s) ([#14](https://github.com/Neovici/cosmoz-tooltip/issues/14)) ([6b10e76](https://github.com/Neovici/cosmoz-tooltip/commit/6b10e7642b6d7d89e24e8dae58bebeb1a03ea318))
+
 ## [1.2.1](https://github.com/Neovici/cosmoz-tooltip/compare/v1.2.0...v1.2.1) (2026-03-20)
 
 ### Bug Fixes

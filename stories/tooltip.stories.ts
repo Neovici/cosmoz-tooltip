@@ -476,3 +476,19 @@ export const DisabledForAttribute: Story = {
 		);
 	},
 };
+
+export const EmptyPassthrough: Story = {
+	render: () => html`
+		<div style="padding: 4rem; text-align: center;">
+			<cosmoz-tooltip>
+				<cosmoz-button>No heading/description/slot content</cosmoz-button>
+			</cosmoz-tooltip>
+		</div>
+	`,
+	play: async ({ canvas, step }) => {
+		await step('Renders as pass-through without popover', async () => {
+			const button = canvas.getByShadowRole('button');
+			expect(button).toBeVisible();
+		});
+	},
+};

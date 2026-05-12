@@ -6,6 +6,7 @@ import { when } from 'lit-html/directives/when.js';
 import './cosmoz-tooltip-content.js';
 import { popoverStyle } from './popover-style.js';
 import { useForTooltip } from './use-for-tooltip.js';
+import { useHasSlottedContent } from './use-has-slotted-content.js';
 
 /**
  * Host-specific styles (shadow DOM only).
@@ -47,14 +48,18 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 	} = host;
 	const popover = useRef<HTMLElement>();
 	const timeoutId = useRef<number>();
+	const contentSlotRef = useRef<HTMLSlotElement>();
+	const hasSlottedContent = useHasSlottedContent(contentSlotRef);
+	const hasContent = !!(heading || description || hasSlottedContent);
+	const shouldRenderTooltip = hasContent && !disabled;
 
 	const show = useCallback(() => {
-		if (disabled) return;
+		if (!shouldRenderTooltip) return;
 		clearTimeout(timeoutId.current);
 		timeoutId.current = window.setTimeout(() => {
 			popover.current?.showPopover();
 		}, delay);
-	}, [delay, disabled]);
+	}, [delay, shouldRenderTooltip]);
 
 	// Immediately hide if disabled while visible
 	useEffect(() => {
@@ -101,6 +106,14 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 	// For attribute mode: nothing to render in shadow DOM
 	if (forAttr) return nothing;
 
+	// Pass-through when disabled or no content
+	if (!shouldRenderTooltip) {
+		return html`
+			<slot></slot>
+			<slot name="content" ${ref(contentSlotRef)} hidden></slot>
+		`;
+	}
+
 	// Wrapping mode: render slot + popover in shadow DOM
 	return html`
 		<slot @focusin=${show} @focusout=${hide}></slot>
@@ -109,9 +122,7 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 			popover="manual"
 			role="tooltip"
 			style="position-area: ${placement}"
-			${ref((el) => {
-				popover.current = el as HTMLElement | undefined;
-			})}
+			${ref(popover)}
 		>
 			<cosmoz-tooltip-content>
 				${when(heading, () => html`<strong slot="heading">${heading}</strong>`)}
@@ -119,7 +130,7 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 					description,
 					() => html`<p slot="description">${description}</p>`,
 				)}
-				<slot name="content"></slot>
+				<slot name="content" ${ref(contentSlotRef)}></slot>
 			</cosmoz-tooltip-content>
 		</div>
 	`;

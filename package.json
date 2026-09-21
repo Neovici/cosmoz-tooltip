@@ -48,7 +48,7 @@
     "./cosmoz-tooltip": "./dist/cosmoz-tooltip.js"
   },
   "dependencies": {
-    "@neovici/cosmoz-tokens": "^4.2.0",
+    "@neovici/cosmoz-tokens": "^3.2.1 || ^4.0.0",
     "@pionjs/pion": "^2.14.0",
     "lit-html": "^3.3.1"
   },

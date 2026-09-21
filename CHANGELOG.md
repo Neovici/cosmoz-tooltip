@@ -1,5 +1,15 @@
 ## [1.3.0](https://github.com/Neovici/cosmoz-tooltip/compare/v1.2.2...v1.3.0) (2026-05-12)
 
+## 1.4.0
+
+### Minor Changes
+
+- 94fba96: Allow `@neovici/cosmoz-tokens` ^3 || ^4 (light-dark() adoption)
+
+  The JS surface used by the component (`normalize`) is unchanged between
+  tokens v3 and v4, so the widened range keeps the component compatible
+  with hosts on either major.
+
 ## 1.3.1
 
 ### Patch Changes

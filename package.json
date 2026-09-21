@@ -61,7 +61,6 @@
     "@neovici/cosmoz-icons": "^1.5.0",
     "@neovici/testing": "^2.0.0",
     "@playwright/test": "1.60.0",
-    "playwright": "1.60.0",
     "@storybook/addon-docs": "^10.0.0",
     "@storybook/addon-vitest": "^10.2.4",
     "@storybook/web-components-vite": "^10.2.4",

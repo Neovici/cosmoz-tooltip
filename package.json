@@ -48,7 +48,7 @@
     "./cosmoz-tooltip": "./dist/cosmoz-tooltip.js"
   },
   "dependencies": {
-    "@neovici/cosmoz-tokens": "^3.2.1",
+    "@neovici/cosmoz-tokens": "^4.2.0",
     "@pionjs/pion": "^2.14.0",
     "lit-html": "^3.3.1"
   },
@@ -56,7 +56,7 @@
     "@changesets/cli": "^2.27.0",
     "@commitlint/cli": "^20.0.0",
     "@commitlint/config-conventional": "^20.0.0",
-    "@neovici/cfg": "^2.8.0",
+    "@neovici/cfg": "github:Neovici/cfg#feat/dev-deps-excluded",
     "@neovici/cosmoz-button": "^1.0.0",
     "@neovici/cosmoz-icons": "^1.5.0",
     "@neovici/testing": "^2.0.0",

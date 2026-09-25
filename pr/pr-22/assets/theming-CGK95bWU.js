@@ -1,0 +1,1 @@
+import"./react-DiVRNtpo.js";import{Dt as e,It as t}from"./DocsRenderer-JROSPFPF-DFcDq15T.js";e();export{t as color};

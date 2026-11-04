@@ -48,13 +48,14 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 	} = host;
 	const popover = useRef<HTMLElement>();
 	const timeoutId = useRef<number>();
+	const pressed = useRef(false);
 	const contentSlotRef = useRef<HTMLSlotElement>();
 	const hasSlottedContent = useHasSlottedContent(contentSlotRef);
 	const hasContent = !!(heading || description || hasSlottedContent);
 	const shouldRenderTooltip = hasContent && !disabled;
 
 	const show = useCallback(() => {
-		if (!shouldRenderTooltip) return;
+		if (pressed.current || !shouldRenderTooltip) return;
 		clearTimeout(timeoutId.current);
 		timeoutId.current = window.setTimeout(() => {
 			popover.current?.showPopover();
@@ -77,6 +78,24 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 	// unlike pointerenter/pointerleave on <slot>.
 	useEffect(() => {
 		if (forAttr) return;
+		const root = host.getRootNode() as Document | ShadowRoot;
+
+		const onPointerOver = (e: Event) => {
+			// Touch pointers have no hover, so they never trigger tooltips.
+			if ((e as PointerEvent).pointerType === 'touch') return;
+			show();
+		};
+
+		const onPointerDown = () => {
+			pressed.current = true;
+			hide();
+		};
+
+		// Pointerup on the root, not the host: the pointer may leave the
+		// trigger (or be released outside it) before a drag ends.
+		const onPointerUp = () => {
+			pressed.current = false;
+		};
 
 		const onPointerOut = (e: PointerEvent) => {
 			const related = e.relatedTarget as Element | null;
@@ -84,11 +103,17 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 			hide();
 		};
 
-		host.addEventListener('pointerover', show);
+		// In the order the browser fires them: enter, press, release, leave; the
+		// template's focusin/focusout stay the keyboard fallback.
+		host.addEventListener('pointerover', onPointerOver);
+		host.addEventListener('pointerdown', onPointerDown);
+		root.addEventListener('pointerup', onPointerUp);
 		host.addEventListener('pointerout', onPointerOut as EventListener);
 
 		return () => {
-			host.removeEventListener('pointerover', show);
+			host.removeEventListener('pointerover', onPointerOver);
+			host.removeEventListener('pointerdown', onPointerDown);
+			root.removeEventListener('pointerup', onPointerUp);
 			host.removeEventListener('pointerout', onPointerOut as EventListener);
 		};
 	}, [forAttr, show, hide]);
@@ -128,7 +153,7 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 				${when(heading, () => html`<strong slot="heading">${heading}</strong>`)}
 				${when(
 					description,
-					() => html`<p slot="description">${description}</p>`,
+					() => html`<p slot="description">${description}</p>`
 				)}
 				<slot name="content" ${ref(contentSlotRef)}></slot>
 			</cosmoz-tooltip-content>
@@ -148,7 +173,7 @@ customElements.define(
 			'delay',
 			'disabled',
 		],
-	}),
+	})
 );
 
 export { CosmozTooltip };

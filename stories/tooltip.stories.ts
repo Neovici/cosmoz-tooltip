@@ -6,6 +6,7 @@ import {
 } from '@neovici/cosmoz-icons/untitled';
 import { html } from '@pionjs/pion';
 import type { Meta, StoryObj } from '@storybook/web-components';
+import { server } from '@vitest/browser/context';
 import { expect, waitFor } from 'storybook/test';
 import '../src/cosmoz-tooltip';
 
@@ -54,6 +55,17 @@ const meta: Meta<StoryArgs> = {
 export default meta;
 
 type Story = StoryObj<StoryArgs>;
+
+// A tap through the browser's real input pipeline: the server-side `realTap`
+// command taps the element with Playwright (hasTouch context), so pointer
+// events, compatibility mouse events, and the late tap focus are genuine.
+const tap = (selector: string) =>
+	(
+		server.commands as unknown as Record<
+			string,
+			(selector: string) => Promise<void>
+		>
+	).realTap(selector);
 
 export const Basic: Story = {
 	render: (args) => html`
@@ -544,7 +556,7 @@ export const ForAttributeTouch: Story = {
 				placement=${args.placement}
 				delay=${args.delay}
 			></cosmoz-tooltip>
-			<input name="touch-target" placeholder="Tap me" />
+			<input name="touch-target" placeholder="Tap me" data-testid="tap-input" />
 		</div>
 	`,
 	play: async ({ canvas, step, userEvent }) => {
@@ -563,43 +575,13 @@ export const ForAttributeTouch: Story = {
 			await waitFor(() => expect(isOpen(input)).toBe(false), { timeout: 500 });
 		});
 
-		// userEvent cannot drive touch pointers; dispatch the event that the
-		// touch tap produces on the target. With delay 0 any unhandled touch
-		// pointerover would open the tooltip immediately.
-		await step('Does not show tooltip for touch pointers', async () => {
+		// A real tap exercises the whole touch path at once: the touch-pointer
+		// exclusion (no hover) and the focus a tap dispatches after pointerup,
+		// which lands outside the press-suppression window.
+		await step('Does not show tooltip for a real tap', async () => {
 			const input = canvas.getByPlaceholderText('Tap me');
-			input.dispatchEvent(
-				new PointerEvent('pointerover', {
-					pointerId: 1,
-					pointerType: 'touch',
-					bubbles: true,
-					composed: true,
-				})
-			);
-			await new Promise((resolve) => setTimeout(resolve, 250));
-			expect(isOpen(input)).toBe(false);
-		});
-		// A tap focuses the trigger after pointerup on touch, outside the
-		// press-suppression window; the tooltip must stay hidden.
-		await step('Does not show tooltip for tap focus', async () => {
-			const input = canvas.getByPlaceholderText('Tap me');
-			for (const type of ['pointerdown', 'pointerup', 'pointerout']) {
-				input.dispatchEvent(
-					new PointerEvent(type, {
-						pointerId: 1,
-						pointerType: 'touch',
-						bubbles: true,
-						composed: true,
-					})
-				);
-			}
-			input.dispatchEvent(
-				new FocusEvent('focusin', {
-					bubbles: true,
-					composed: true,
-				})
-			);
-			await new Promise((resolve) => setTimeout(resolve, 250));
+			await tap('[data-testid="tap-input"]');
+			await new Promise((resolve) => setTimeout(resolve, 300));
 			expect(isOpen(input)).toBe(false);
 		});
 	},
@@ -675,7 +657,7 @@ export const WrappingTouch: Story = {
 				placement=${args.placement}
 				delay=${args.delay}
 			>
-				<cosmoz-button>Tap me</cosmoz-button>
+				<cosmoz-button data-testid="tap-button">Tap me</cosmoz-button>
 			</cosmoz-tooltip>
 		</div>
 	`,
@@ -703,43 +685,13 @@ export const WrappingTouch: Story = {
 			});
 		});
 
-		// userEvent cannot drive touch pointers; dispatch the event that the
-		// touch tap produces on the trigger. With delay 0 any unhandled touch
-		// pointerover would open the tooltip immediately.
-		await step('Does not show tooltip for touch pointers', async () => {
+		// A real tap exercises the whole touch path at once: the touch-pointer
+		// exclusion (no hover) and the focus a tap dispatches after pointerup,
+		// which lands outside the press-suppression window.
+		await step('Does not show tooltip for a real tap', async () => {
 			const button = canvas.getByShadowRole('button');
-			button.dispatchEvent(
-				new PointerEvent('pointerover', {
-					pointerId: 1,
-					pointerType: 'touch',
-					bubbles: true,
-					composed: true,
-				})
-			);
-			await new Promise((resolve) => setTimeout(resolve, 250));
-			expect(isOpen(button)).toBe(false);
-		});
-		// A tap focuses the trigger after pointerup on touch, outside the
-		// press-suppression window; the tooltip must stay hidden.
-		await step('Does not show tooltip for tap focus', async () => {
-			const button = canvas.getByShadowRole('button');
-			for (const type of ['pointerdown', 'pointerup', 'pointerout']) {
-				button.dispatchEvent(
-					new PointerEvent(type, {
-						pointerId: 1,
-						pointerType: 'touch',
-						bubbles: true,
-						composed: true,
-					})
-				);
-			}
-			button.dispatchEvent(
-				new FocusEvent('focusin', {
-					bubbles: true,
-					composed: true,
-				})
-			);
-			await new Promise((resolve) => setTimeout(resolve, 250));
+			await tap('[data-testid="tap-button"]');
+			await new Promise((resolve) => setTimeout(resolve, 300));
 			expect(isOpen(button)).toBe(false);
 		});
 	},

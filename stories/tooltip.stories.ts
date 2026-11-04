@@ -85,7 +85,7 @@ export const Basic: Story = {
 						expect(elements[0]).not.toBeVisible();
 					}
 				},
-				{ timeout: 500 },
+				{ timeout: 500 }
 			);
 		});
 	},
@@ -314,7 +314,7 @@ export const FocusWithoutHover: Story = {
 				if (tooltipTexts.length > 0) {
 					expect(tooltipTexts[0]).not.toBeVisible();
 				}
-			},
+			}
 		);
 	},
 };
@@ -352,12 +352,12 @@ export const ForAttributeFocusWithoutHover: Story = {
 				await new Promise((resolve) => setTimeout(resolve, 200));
 
 				const tooltipTexts = canvas.queryAllByShadowText(
-					/For focus test tooltip/u,
+					/For focus test tooltip/u
 				);
 				if (tooltipTexts.length > 0) {
 					expect(tooltipTexts[0]).not.toBeVisible();
 				}
-			},
+			}
 		);
 	},
 };
@@ -460,7 +460,7 @@ export const DisabledForAttribute: Story = {
 			'Should NOT show tooltip on hover when disabled (for mode)',
 			async () => {
 				const input = canvas.getByPlaceholderText(
-					'Hover me (disabled for tooltip)',
+					'Hover me (disabled for tooltip)'
 				);
 				await userEvent.hover(input);
 
@@ -472,8 +472,113 @@ export const DisabledForAttribute: Story = {
 				if (tooltipTexts.length > 0) {
 					expect(tooltipTexts[0]).not.toBeVisible();
 				}
-			},
+			}
 		);
+	},
+};
+
+export const ForAttributePointerDown: Story = {
+	args: {
+		delay: 300,
+		heading: 'Press to dismiss',
+		description: 'Hidden while pressing',
+	},
+	render: (args) => html`
+		<div style="padding: 4rem; text-align: center;">
+			<cosmoz-tooltip
+				for="press-target"
+				heading=${args.heading}
+				description=${args.description}
+				placement=${args.placement}
+				delay=${args.delay}
+			></cosmoz-tooltip>
+			<input name="press-target" placeholder="Hover then press me" />
+		</div>
+	`,
+	play: async ({ canvas, step, userEvent }) => {
+		// The for-mode popover is a light-DOM sibling of <cosmoz-tooltip>.
+		const isOpen = (input: Element) =>
+			input
+				.getRootNode()
+				.querySelector('.cosmoz-tooltip-popover')
+				?.matches(':popover-open') ?? false;
+
+		await step('Shows tooltip on hover', async () => {
+			const input = canvas.getByPlaceholderText('Hover then press me');
+			await userEvent.hover(input);
+			await waitFor(() => expect(isOpen(input)).toBe(true), { timeout: 1000 });
+		});
+
+		await step('Hides tooltip on press while visible', async () => {
+			const input = canvas.getByPlaceholderText('Hover then press me');
+			await userEvent.click(input);
+			await waitFor(() => expect(isOpen(input)).toBe(false), { timeout: 500 });
+		});
+
+		// The press left the pointer on the target; the input keeps focus.
+		// A tooltip that re-arms (focus or pointer) would be open within
+		// the 300ms delay, so close the window and assert once.
+		await step(
+			'Does not reappear while the pointer stays on the target',
+			async () => {
+				const input = canvas.getByPlaceholderText('Hover then press me');
+				await new Promise((resolve) => setTimeout(resolve, 500));
+				expect(isOpen(input)).toBe(false);
+			}
+		);
+	},
+};
+
+export const ForAttributeTouch: Story = {
+	args: {
+		delay: 0,
+		heading: 'Touch tooltip',
+		description: 'Never shows for touch pointers',
+	},
+	render: (args) => html`
+		<div style="padding: 4rem; text-align: center;">
+			<cosmoz-tooltip
+				for="touch-target"
+				heading=${args.heading}
+				description=${args.description}
+				placement=${args.placement}
+				delay=${args.delay}
+			></cosmoz-tooltip>
+			<input name="touch-target" placeholder="Tap me" />
+		</div>
+	`,
+	play: async ({ canvas, step, userEvent }) => {
+		// The for-mode popover is a light-DOM sibling of <cosmoz-tooltip>.
+		const isOpen = (input: Element) =>
+			input
+				.getRootNode()
+				.querySelector('.cosmoz-tooltip-popover')
+				?.matches(':popover-open') ?? false;
+
+		await step('Shows tooltip for a mouse pointer', async () => {
+			const input = canvas.getByPlaceholderText('Tap me');
+			await userEvent.hover(input);
+			await waitFor(() => expect(isOpen(input)).toBe(true), { timeout: 1000 });
+			await userEvent.unhover(input);
+			await waitFor(() => expect(isOpen(input)).toBe(false), { timeout: 500 });
+		});
+
+		// userEvent cannot drive touch pointers; dispatch the event that the
+		// touch tap produces on the target. With delay 0 any unhandled touch
+		// pointerover would open the tooltip immediately.
+		await step('Does not show tooltip for touch pointers', async () => {
+			const input = canvas.getByPlaceholderText('Tap me');
+			input.dispatchEvent(
+				new PointerEvent('pointerover', {
+					pointerId: 1,
+					pointerType: 'touch',
+					bubbles: true,
+					composed: true,
+				})
+			);
+			await new Promise((resolve) => setTimeout(resolve, 250));
+			expect(isOpen(input)).toBe(false);
+		});
 	},
 };
 

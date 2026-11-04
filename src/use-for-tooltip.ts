@@ -34,14 +34,14 @@ interface ForTooltipOptions {
 const renderContent = (
 	popoverEl: HTMLElement,
 	heading?: string,
-	description?: string,
+	description?: string
 ) =>
 	render(
 		html`<cosmoz-tooltip-content>
 			${when(heading, () => html`<strong slot="heading">${heading}</strong>`)}
 			${when(description, () => html`<p slot="description">${description}</p>`)}
 		</cosmoz-tooltip-content>`,
-		popoverEl,
+		popoverEl
 	);
 
 export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
@@ -85,9 +85,12 @@ export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
 		const selector = `[name="${forAttr}"]`;
 		const anchorName = `--tooltip-anchor-${forAttr}`;
 		let showTimeout: number | undefined;
+		// Pressing the target suppresses the tooltip until the pointer is
+		// released, so drags never show it mid-gesture.
+		let pressed = false;
 
 		const showForTarget = (target: Element) => {
-			if (disabled) return;
+			if (pressed || disabled) return;
 			clearTimeout(showTimeout);
 
 			// Set CSS anchor positioning
@@ -105,7 +108,8 @@ export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
 
 		const onPointerover = (e: Event) => {
 			const target = (e.target as Element).closest?.(selector);
-			if (!target) return;
+			// Touch pointers have no hover, so they never trigger tooltips.
+			if (!target || (e as PointerEvent).pointerType === 'touch') return;
 			showForTarget(target);
 		};
 
@@ -130,10 +134,23 @@ export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
 			hidePopover();
 		};
 
+		const onPointerdown = (e: Event) => {
+			const target = (e.target as Element).closest?.(selector);
+			if (!target) return;
+			pressed = true;
+			hidePopover();
+		};
+
+		const onPointerup = () => {
+			pressed = false;
+		};
+
 		root.addEventListener('pointerover', onPointerover);
 		root.addEventListener('pointerout', onPointerout);
 		root.addEventListener('focusin', onFocusin);
 		root.addEventListener('focusout', onFocusout);
+		root.addEventListener('pointerdown', onPointerdown);
+		root.addEventListener('pointerup', onPointerup);
 
 		return () => {
 			clearTimeout(showTimeout);
@@ -141,6 +158,8 @@ export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
 			root.removeEventListener('pointerout', onPointerout);
 			root.removeEventListener('focusin', onFocusin);
 			root.removeEventListener('focusout', onFocusout);
+			root.removeEventListener('pointerdown', onPointerdown);
+			root.removeEventListener('pointerup', onPointerup);
 			popoverEl.hidePopover();
 			popoverEl.remove();
 			popover.current = undefined;

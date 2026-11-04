@@ -1,8 +1,9 @@
-import { render, useEffect, useRef } from '@pionjs/pion';
+import { render, useEffect } from '@pionjs/pion';
 import { html } from 'lit-html';
 import { when } from 'lit-html/directives/when.js';
 import './cosmoz-tooltip-content.js';
 import { popoverStyle } from './popover-style.js';
+import { createGestureTooltips } from './tooltip-gestures';
 
 // CSS Anchor Positioning is not yet in TypeScript's CSSStyleDeclaration
 declare global {
@@ -53,9 +54,7 @@ export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
 		delay = 300,
 		disabled = false,
 	} = opts;
-	const popover = useRef<HTMLElement>();
-	const hasContent = !!(heading || description);
-	const shouldRenderTooltip = hasContent && !disabled;
+	const shouldRenderTooltip = !!(heading || description) && !disabled;
 
 	// eslint-disable-next-line max-statements
 	useEffect(() => {
@@ -74,128 +73,33 @@ export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
 		popoverEl.setAttribute('popover', 'manual');
 		popoverEl.setAttribute('role', 'tooltip');
 		popoverEl.classList.add('cosmoz-tooltip-popover');
-
 		// Insert after host to keep it in the same container scope
 		host.after(popoverEl);
-		popover.current = popoverEl;
-
-		// Render initial content
 		renderContent(popoverEl, heading, description);
 
-		const selector = `[name="${forAttr}"]`;
 		const anchorName = `--tooltip-anchor-${forAttr}`;
-		let showTimeout: number | undefined;
-		// Pressing the target suppresses the tooltip until the pointer is
-		// released, so drags never show it mid-gesture. A non-mouse tap
-		// focuses its target after pointerup (too late for `pressed`), so
-		// the focus that follows is swallowed once.
-		let pressed = false;
-		let suppressFocus = false;
-
-		const showForTarget = (target: Element) => {
-			if (pressed || disabled) return;
-			clearTimeout(showTimeout);
-
-			// Set CSS anchor positioning
+		const show = (target: Element | undefined) => {
+			// CSS Anchor Positioning
 			(target as HTMLElement).style.anchorName = anchorName;
 			popoverEl.style.positionAnchor = anchorName;
 			popoverEl.style.positionArea = placement;
-
-			showTimeout = window.setTimeout(() => popoverEl.showPopover(), delay);
+			popoverEl.showPopover();
 		};
+		const hide = () => popoverEl.hidePopover();
 
-		const hidePopover = () => {
-			clearTimeout(showTimeout);
-			popoverEl.hidePopover();
-		};
-
-		const onPointerover = (e: Event) => {
-			const target = (e.target as Element).closest?.(selector);
-			// Touch pointers have no hover, so they never trigger tooltips.
-			if (!target || (e as PointerEvent).pointerType === 'touch') return;
-			// Mouse re-entry clears any leftover tap-focus suppression.
-			suppressFocus = false;
-			showForTarget(target);
-		};
-
-		const onPointerdown = (e: Event) => {
-			const target = (e.target as Element).closest?.(selector);
-			if (!target) return;
-			if ((e as PointerEvent).pointerType !== 'mouse') suppressFocus = true;
-			pressed = true;
-			hidePopover();
-		};
-
-		// Pointerup on the root, not the target: the pointer may leave the
-		// target (or be released outside it) before a drag ends.
-		const onPointerup = () => {
-			pressed = false;
-		};
-
-		const onPointerout = (e: Event) => {
-			const target = (e.target as Element).closest?.(selector);
-			if (!target) return;
-			const related = (e as PointerEvent).relatedTarget as Element | null;
-			// Still inside the target element? Ignore.
-			if (related && target.contains(related)) return;
-			hidePopover();
-		};
-
-		const onKeydown = () => {
-			// Keyboard focus is real, unlike the focus a tap synthesized.
-			suppressFocus = false;
-		};
-
-		const onFocusin = (e: Event) => {
-			const target = (e.target as Element).closest?.(selector);
-			if (!target) return;
-			if (suppressFocus) {
-				suppressFocus = false;
-				return;
-			}
-			showForTarget(target);
-		};
-
-		const onFocusout = (e: Event) => {
-			const target = (e.target as Element).closest?.(selector);
-			if (!target) return;
-			hidePopover();
-		};
-
-		// In the order the browser fires them: enter, press, release, leave;
-		// focus is the keyboard fallback.
-		root.addEventListener('pointerover', onPointerover);
-		root.addEventListener('pointerdown', onPointerdown);
-		root.addEventListener('pointerup', onPointerup);
-		root.addEventListener('pointerout', onPointerout);
-		root.addEventListener('keydown', onKeydown);
-		root.addEventListener('focusin', onFocusin);
-		root.addEventListener('focusout', onFocusout);
+		const gestures = createGestureTooltips({
+			root,
+			delay,
+			matchTarget: (event) =>
+				(event.target as Element).closest?.(`[name="${forAttr}"]`) ?? undefined,
+			show,
+			hide,
+		});
 
 		return () => {
-			clearTimeout(showTimeout);
-			root.removeEventListener('pointerover', onPointerover);
-			root.removeEventListener('pointerdown', onPointerdown);
-			root.removeEventListener('pointerup', onPointerup);
-			root.removeEventListener('pointerout', onPointerout);
-			root.removeEventListener('keydown', onKeydown);
-			root.removeEventListener('focusin', onFocusin);
-			root.removeEventListener('focusout', onFocusout);
+			gestures.dispose();
 			popoverEl.hidePopover();
 			popoverEl.remove();
-			popover.current = undefined;
 		};
-	}, [forAttr, placement, delay, shouldRenderTooltip]);
-
-	// Re-render light-DOM popover content when heading/description change
-	useEffect(() => {
-		if (!forAttr || !popover.current) return;
-		renderContent(popover.current, heading, description);
-	}, [heading, description, forAttr]);
-
-	// Immediately hide if disabled while visible (for="" mode)
-	useEffect(() => {
-		if (!disabled || !popover.current) return;
-		popover.current.hidePopover();
-	}, [disabled]);
+	}, [forAttr, heading, description, placement, delay, shouldRenderTooltip]);
 };

@@ -579,6 +579,29 @@ export const ForAttributeTouch: Story = {
 			await new Promise((resolve) => setTimeout(resolve, 250));
 			expect(isOpen(input)).toBe(false);
 		});
+		// A tap focuses the trigger after pointerup on touch, outside the
+		// press-suppression window; the tooltip must stay hidden.
+		await step('Does not show tooltip for tap focus', async () => {
+			const input = canvas.getByPlaceholderText('Tap me');
+			for (const type of ['pointerdown', 'pointerup', 'pointerout']) {
+				input.dispatchEvent(
+					new PointerEvent(type, {
+						pointerId: 1,
+						pointerType: 'touch',
+						bubbles: true,
+						composed: true,
+					})
+				);
+			}
+			input.dispatchEvent(
+				new FocusEvent('focusin', {
+					bubbles: true,
+					composed: true,
+				})
+			);
+			await new Promise((resolve) => setTimeout(resolve, 250));
+			expect(isOpen(input)).toBe(false);
+		});
 	},
 };
 
@@ -695,6 +718,28 @@ export const WrappingTouch: Story = {
 			);
 			await new Promise((resolve) => setTimeout(resolve, 250));
 			expect(isOpen(button)).toBe(false);
+		});
+		// A tap focuses the trigger after pointerup on touch, outside the
+		// press-suppression window; the tooltip must stay hidden.
+		await step('Does not show tooltip for tap focus', async () => {
+			const button = canvas.getByShadowRole('button');
+			for (const type of ['pointerdown', 'pointerup', 'pointerout']) {
+				button.dispatchEvent(
+					new PointerEvent(type, {
+						pointerId: 1,
+						pointerType: 'touch',
+						bubbles: true,
+						composed: true,
+					})
+				);
+			}
+			button.dispatchEvent(
+				new FocusEvent('focusin', {
+					bubbles: true,
+					composed: true,
+				})
+			);
+			await new Promise((resolve) => setTimeout(resolve, 250));
 			expect(isOpen(button)).toBe(false);
 		});
 	},

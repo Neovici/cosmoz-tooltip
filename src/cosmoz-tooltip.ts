@@ -49,6 +49,7 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 	const popover = useRef<HTMLElement>();
 	const timeoutId = useRef<number>();
 	const pressed = useRef(false);
+	const suppressFocus = useRef(false);
 	const contentSlotRef = useRef<HTMLSlotElement>();
 	const hasSlottedContent = useHasSlottedContent(contentSlotRef);
 	const hasContent = !!(heading || description || hasSlottedContent);
@@ -83,10 +84,17 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 		const onPointerOver = (e: Event) => {
 			// Touch pointers have no hover, so they never trigger tooltips.
 			if ((e as PointerEvent).pointerType === 'touch') return;
+			// Mouse re-entry clears any leftover tap-focus suppression.
+			suppressFocus.current = false;
 			show();
 		};
 
-		const onPointerDown = () => {
+		const onPointerDown = (e: Event) => {
+			// A non-mouse tap focuses its target after pointerup (too late
+			// for `pressed`), so the focus that follows is swallowed once.
+			if ((e as PointerEvent).pointerType !== 'mouse') {
+				suppressFocus.current = true;
+			}
 			pressed.current = true;
 			hide();
 		};
@@ -103,18 +111,25 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 			hide();
 		};
 
+		const onKeydown = () => {
+			suppressFocus.current = false;
+		};
+
 		// In the order the browser fires them: enter, press, release, leave; the
 		// template's focusin/focusout stay the keyboard fallback.
 		host.addEventListener('pointerover', onPointerOver);
 		host.addEventListener('pointerdown', onPointerDown);
 		root.addEventListener('pointerup', onPointerUp);
 		host.addEventListener('pointerout', onPointerOut as EventListener);
+		// Keydown means the focus the user makes is theirs, not a tap's.
+		root.addEventListener('keydown', onKeydown);
 
 		return () => {
 			host.removeEventListener('pointerover', onPointerOver);
 			host.removeEventListener('pointerdown', onPointerDown);
 			root.removeEventListener('pointerup', onPointerUp);
 			host.removeEventListener('pointerout', onPointerOut as EventListener);
+			root.removeEventListener('keydown', onKeydown);
 		};
 	}, [forAttr, show, hide]);
 
@@ -131,6 +146,15 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 	// For attribute mode: nothing to render in shadow DOM
 	if (forAttr) return nothing;
 
+	// Keyboard focus shows the tooltip; tap focus is swallowed instead.
+	const onFocusIn = () => {
+		if (suppressFocus.current) {
+			suppressFocus.current = false;
+			return;
+		}
+		show();
+	};
+
 	// Pass-through when disabled or no content
 	if (!shouldRenderTooltip) {
 		return html`
@@ -141,7 +165,7 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 
 	// Wrapping mode: render slot + popover in shadow DOM
 	return html`
-		<slot @focusin=${show} @focusout=${hide}></slot>
+		<slot @focusin=${onFocusIn} @focusout=${hide}></slot>
 		<div
 			class="cosmoz-tooltip-popover"
 			popover="manual"

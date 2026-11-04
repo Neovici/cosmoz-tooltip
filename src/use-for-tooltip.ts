@@ -86,8 +86,11 @@ export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
 		const anchorName = `--tooltip-anchor-${forAttr}`;
 		let showTimeout: number | undefined;
 		// Pressing the target suppresses the tooltip until the pointer is
-		// released, so drags never show it mid-gesture.
+		// released, so drags never show it mid-gesture. A non-mouse tap
+		// focuses its target after pointerup (too late for `pressed`), so
+		// the focus that follows is swallowed once.
 		let pressed = false;
+		let suppressFocus = false;
 
 		const showForTarget = (target: Element) => {
 			if (pressed || disabled) return;
@@ -110,12 +113,15 @@ export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
 			const target = (e.target as Element).closest?.(selector);
 			// Touch pointers have no hover, so they never trigger tooltips.
 			if (!target || (e as PointerEvent).pointerType === 'touch') return;
+			// Mouse re-entry clears any leftover tap-focus suppression.
+			suppressFocus = false;
 			showForTarget(target);
 		};
 
 		const onPointerdown = (e: Event) => {
 			const target = (e.target as Element).closest?.(selector);
 			if (!target) return;
+			if ((e as PointerEvent).pointerType !== 'mouse') suppressFocus = true;
 			pressed = true;
 			hidePopover();
 		};
@@ -135,9 +141,18 @@ export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
 			hidePopover();
 		};
 
+		const onKeydown = () => {
+			// Keyboard focus is real, unlike the focus a tap synthesized.
+			suppressFocus = false;
+		};
+
 		const onFocusin = (e: Event) => {
 			const target = (e.target as Element).closest?.(selector);
 			if (!target) return;
+			if (suppressFocus) {
+				suppressFocus = false;
+				return;
+			}
 			showForTarget(target);
 		};
 
@@ -153,6 +168,7 @@ export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
 		root.addEventListener('pointerdown', onPointerdown);
 		root.addEventListener('pointerup', onPointerup);
 		root.addEventListener('pointerout', onPointerout);
+		root.addEventListener('keydown', onKeydown);
 		root.addEventListener('focusin', onFocusin);
 		root.addEventListener('focusout', onFocusout);
 
@@ -162,6 +178,7 @@ export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
 			root.removeEventListener('pointerdown', onPointerdown);
 			root.removeEventListener('pointerup', onPointerup);
 			root.removeEventListener('pointerout', onPointerout);
+			root.removeEventListener('keydown', onKeydown);
 			root.removeEventListener('focusin', onFocusin);
 			root.removeEventListener('focusout', onFocusout);
 			popoverEl.hidePopover();

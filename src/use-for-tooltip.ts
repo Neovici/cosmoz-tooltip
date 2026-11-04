@@ -113,6 +113,19 @@ export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
 			showForTarget(target);
 		};
 
+		const onPointerdown = (e: Event) => {
+			const target = (e.target as Element).closest?.(selector);
+			if (!target) return;
+			pressed = true;
+			hidePopover();
+		};
+
+		// Pointerup on the root, not the target: the pointer may leave the
+		// target (or be released outside it) before a drag ends.
+		const onPointerup = () => {
+			pressed = false;
+		};
+
 		const onPointerout = (e: Event) => {
 			const target = (e.target as Element).closest?.(selector);
 			if (!target) return;
@@ -134,32 +147,23 @@ export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
 			hidePopover();
 		};
 
-		const onPointerdown = (e: Event) => {
-			const target = (e.target as Element).closest?.(selector);
-			if (!target) return;
-			pressed = true;
-			hidePopover();
-		};
-
-		const onPointerup = () => {
-			pressed = false;
-		};
-
+		// In the order the browser fires them: enter, press, release, leave;
+		// focus is the keyboard fallback.
 		root.addEventListener('pointerover', onPointerover);
+		root.addEventListener('pointerdown', onPointerdown);
+		root.addEventListener('pointerup', onPointerup);
 		root.addEventListener('pointerout', onPointerout);
 		root.addEventListener('focusin', onFocusin);
 		root.addEventListener('focusout', onFocusout);
-		root.addEventListener('pointerdown', onPointerdown);
-		root.addEventListener('pointerup', onPointerup);
 
 		return () => {
 			clearTimeout(showTimeout);
 			root.removeEventListener('pointerover', onPointerover);
+			root.removeEventListener('pointerdown', onPointerdown);
+			root.removeEventListener('pointerup', onPointerup);
 			root.removeEventListener('pointerout', onPointerout);
 			root.removeEventListener('focusin', onFocusin);
 			root.removeEventListener('focusout', onFocusout);
-			root.removeEventListener('pointerdown', onPointerdown);
-			root.removeEventListener('pointerup', onPointerup);
 			popoverEl.hidePopover();
 			popoverEl.remove();
 			popover.current = undefined;

@@ -582,6 +582,124 @@ export const ForAttributeTouch: Story = {
 	},
 };
 
+export const WrappingPointerDown: Story = {
+	args: {
+		delay: 300,
+		heading: 'Press to dismiss',
+		description: 'Hidden while pressing',
+	},
+	render: (args) => html`
+		<div style="padding: 4rem; text-align: center;">
+			<cosmoz-tooltip
+				heading=${args.heading}
+				description=${args.description}
+				placement=${args.placement}
+				delay=${args.delay}
+			>
+				<cosmoz-button>Hover then press me</cosmoz-button>
+			</cosmoz-tooltip>
+		</div>
+	`,
+	play: async ({ canvas, step, userEvent }) => {
+		// The wrapping-mode popover lives in the tooltip's shadow root.
+		const isOpen = (trigger: Element) => {
+			const button = (trigger.getRootNode() as ShadowRoot).host as Element;
+			const tooltip = button?.closest?.('cosmoz-tooltip');
+			return (
+				tooltip?.shadowRoot
+					?.querySelector('.cosmoz-tooltip-popover')
+					?.matches(':popover-open') ?? false
+			);
+		};
+
+		await step('Shows tooltip on hover', async () => {
+			const button = canvas.getByShadowRole('button');
+			await userEvent.hover(button);
+			await waitFor(async () => expect(isOpen(button)).toBe(true), {
+				timeout: 1000,
+			});
+		});
+
+		await step('Hides tooltip on press while visible', async () => {
+			const button = canvas.getByShadowRole('button');
+			await userEvent.click(button);
+			await waitFor(async () => expect(isOpen(button)).toBe(false), {
+				timeout: 500,
+			});
+		});
+
+		await step('Does not reappear while the trigger keeps focus', async () => {
+			const button = canvas.getByShadowRole('button');
+			// The press left focus on the trigger; a tooltip that re-arms would
+			// be open within the 300ms delay, so close the window and assert once.
+			await new Promise((resolve) => setTimeout(resolve, 500));
+			expect(isOpen(button)).toBe(false);
+		});
+	},
+};
+
+export const WrappingTouch: Story = {
+	args: {
+		delay: 0,
+		heading: 'Touch tooltip',
+		description: 'Never shows for touch pointers',
+	},
+	render: (args) => html`
+		<div style="padding: 4rem; text-align: center;">
+			<cosmoz-tooltip
+				heading=${args.heading}
+				description=${args.description}
+				placement=${args.placement}
+				delay=${args.delay}
+			>
+				<cosmoz-button>Tap me</cosmoz-button>
+			</cosmoz-tooltip>
+		</div>
+	`,
+	play: async ({ canvas, step, userEvent }) => {
+		// The wrapping-mode popover lives in the tooltip's shadow root.
+		const isOpen = (trigger: Element) => {
+			const button = (trigger.getRootNode() as ShadowRoot).host as Element;
+			const tooltip = button?.closest?.('cosmoz-tooltip');
+			return (
+				tooltip?.shadowRoot
+					?.querySelector('.cosmoz-tooltip-popover')
+					?.matches(':popover-open') ?? false
+			);
+		};
+
+		await step('Shows tooltip for a mouse pointer', async () => {
+			const button = canvas.getByShadowRole('button');
+			await userEvent.hover(button);
+			await waitFor(async () => expect(isOpen(button)).toBe(true), {
+				timeout: 1000,
+			});
+			await userEvent.unhover(button);
+			await waitFor(async () => expect(isOpen(button)).toBe(false), {
+				timeout: 500,
+			});
+		});
+
+		// userEvent cannot drive touch pointers; dispatch the event that the
+		// touch tap produces on the trigger. With delay 0 any unhandled touch
+		// pointerover would open the tooltip immediately.
+		await step('Does not show tooltip for touch pointers', async () => {
+			const button = canvas.getByShadowRole('button');
+			button.dispatchEvent(
+				new PointerEvent('pointerover', {
+					pointerId: 1,
+					pointerType: 'touch',
+					bubbles: true,
+					composed: true,
+				})
+			);
+			await new Promise((resolve) => setTimeout(resolve, 250));
+			expect(isOpen(button)).toBe(false);
+			expect(isOpen(button)).toBe(false);
+		});
+	},
+};
+
 export const EmptyPassthrough: Story = {
 	render: () => html`
 		<div style="padding: 4rem; text-align: center;">

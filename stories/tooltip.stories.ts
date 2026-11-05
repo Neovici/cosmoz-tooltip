@@ -6,6 +6,7 @@ import {
 } from '@neovici/cosmoz-icons/untitled';
 import { html } from '@pionjs/pion';
 import type { Meta, StoryObj } from '@storybook/web-components';
+import { server, userEvent } from '@vitest/browser/context';
 import { expect, waitFor } from 'storybook/test';
 import '../src/cosmoz-tooltip';
 
@@ -55,6 +56,40 @@ export default meta;
 
 type Story = StoryObj<StoryArgs>;
 
+// A tap through the browser's real input pipeline: the server-side `realTap`
+// command taps the element with Playwright (hasTouch context), so pointer
+// events, compatibility mouse events, and the late tap focus are genuine.
+const tap = (selector: string) =>
+	(
+		server.commands as unknown as Record<
+			string,
+			(selector: string) => Promise<void>
+		>
+	).realTap(selector);
+
+// The popover that belongs to a given trigger, in either mode: wrapping
+// mode keeps it in the tooltip's shadow root, for="" mode as a light-DOM
+// sibling in the story tree. Visibility is asserted via :popover-open --
+// text queries find headings inside a *closed* popover and pass vacuously.
+const popoverOf = (trigger: Element): Element | null | undefined => {
+	const root = trigger.getRootNode() as ShadowRoot | Document;
+	const innerButton = (root as ShadowRoot).host as Element | undefined;
+	const tooltip =
+		innerButton?.closest?.('cosmoz-tooltip') ??
+		trigger.closest?.('cosmoz-tooltip');
+	if (tooltip?.shadowRoot) {
+		return tooltip.shadowRoot.querySelector('.cosmoz-tooltip-popover');
+	}
+	// for="" mode: the popover is namespaced by the trigger's name because a
+	// story/document can hold several popovers at once.
+	const name = trigger.getAttribute('name');
+	return name
+		? root.querySelector(`.cosmoz-tooltip-popover[data-for="${name}"]`)
+		: null;
+};
+const isOpen = (trigger: Element) =>
+	popoverOf(trigger)?.matches(':popover-open') ?? false;
+
 export const Basic: Story = {
 	render: (args) => html`
 		<div style="padding: 4rem; text-align: center;">
@@ -68,25 +103,17 @@ export const Basic: Story = {
 			</cosmoz-tooltip>
 		</div>
 	`,
-	play: async ({ canvas, step, userEvent }) => {
+	play: async ({ canvas, step }) => {
 		await step('Shows tooltip on hover', async () => {
 			const button = canvas.getByShadowRole('button');
 			await userEvent.hover(button);
-			await canvas.findByShadowText(/Tooltip Heading/u, {}, { timeout: 1000 });
+			await waitFor(() => expect(isOpen(button)).toBe(true), { timeout: 1000 });
 		});
 
 		await step('Hides tooltip on mouse leave', async () => {
 			const button = canvas.getByShadowRole('button');
 			await userEvent.unhover(button);
-			await waitFor(
-				async () => {
-					const elements = canvas.queryAllByShadowText(/Tooltip Heading/u);
-					if (elements.length > 0) {
-						expect(elements[0]).not.toBeVisible();
-					}
-				},
-				{ timeout: 500 },
-			);
+			await waitFor(() => expect(isOpen(button)).toBe(false), { timeout: 500 });
 		});
 	},
 };
@@ -103,11 +130,11 @@ export const HeadingOnly: Story = {
 			</cosmoz-tooltip>
 		</div>
 	`,
-	play: async ({ canvas, step, userEvent }) => {
+	play: async ({ canvas, step }) => {
 		await step('Shows tooltip with heading only', async () => {
 			const button = canvas.getByShadowRole('button');
 			await userEvent.hover(button);
-			await canvas.findByShadowText(/Quick tip/u, {}, { timeout: 1000 });
+			await waitFor(() => expect(isOpen(button)).toBe(true), { timeout: 1000 });
 		});
 	},
 };
@@ -169,17 +196,17 @@ export const ForAttribute: Story = {
 			</div>
 		</div>
 	`,
-	play: async ({ canvas, step, userEvent }) => {
+	play: async ({ canvas, step }) => {
 		await step('Shows tooltip when hovering span', async () => {
 			const span = canvas.getByText('Hover over this text');
 			await userEvent.hover(span);
-			await canvas.findByShadowText(/Hover tooltip/u, {}, { timeout: 1000 });
+			await waitFor(() => expect(isOpen(span)).toBe(true), { timeout: 1000 });
 		});
 
 		await step('Shows tooltip when hovering input', async () => {
 			const input = canvas.getByPlaceholderText('you@example.com');
 			await userEvent.hover(input);
-			await canvas.findByShadowText(/Email format/u, {}, { timeout: 1000 });
+			await waitFor(() => expect(isOpen(input)).toBe(true), { timeout: 1000 });
 		});
 	},
 };
@@ -233,11 +260,11 @@ export const CustomDelay: Story = {
 			</cosmoz-tooltip>
 		</div>
 	`,
-	play: async ({ canvas, step, userEvent }) => {
+	play: async ({ canvas, step }) => {
 		await step('Shows tooltip immediately', async () => {
 			const button = canvas.getByShadowRole('button');
 			await userEvent.hover(button);
-			await canvas.findByShadowText(/Instant tooltip/u, {}, { timeout: 200 });
+			await waitFor(() => expect(isOpen(button)).toBe(true), { timeout: 1000 });
 		});
 	},
 };
@@ -296,7 +323,7 @@ export const FocusWithoutHover: Story = {
 			</cosmoz-tooltip>
 		</div>
 	`,
-	play: async ({ canvas, step, userEvent }) => {
+	play: async ({ canvas, step }) => {
 		await step(
 			'Should NOT show tooltip after hover out even with focus',
 			async () => {
@@ -310,10 +337,7 @@ export const FocusWithoutHover: Story = {
 				// Wait beyond the delay
 				await new Promise((resolve) => setTimeout(resolve, 200));
 
-				const tooltipTexts = canvas.queryAllByShadowText(/Focus test tooltip/u);
-				if (tooltipTexts.length > 0) {
-					expect(tooltipTexts[0]).not.toBeVisible();
-				}
+				expect(isOpen(button)).toBe(false);
 			},
 		);
 	},
@@ -337,7 +361,7 @@ export const ForAttributeFocusWithoutHover: Story = {
 			<input name="focus-test-input" placeholder="Focus test input" />
 		</div>
 	`,
-	play: async ({ canvas, step, userEvent }) => {
+	play: async ({ canvas, step }) => {
 		await step(
 			'Should NOT show tooltip after hover out even with focus',
 			async () => {
@@ -351,12 +375,7 @@ export const ForAttributeFocusWithoutHover: Story = {
 				// Wait beyond the delay
 				await new Promise((resolve) => setTimeout(resolve, 200));
 
-				const tooltipTexts = canvas.queryAllByShadowText(
-					/For focus test tooltip/u,
-				);
-				if (tooltipTexts.length > 0) {
-					expect(tooltipTexts[0]).not.toBeVisible();
-				}
+				expect(isOpen(input)).toBe(false);
 			},
 		);
 	},
@@ -417,7 +436,7 @@ export const Disabled: Story = {
 			</cosmoz-tooltip>
 		</div>
 	`,
-	play: async ({ canvas, step, userEvent }) => {
+	play: async ({ canvas, step }) => {
 		await step('Should NOT show tooltip on hover when disabled', async () => {
 			const button = canvas.getByShadowRole('button');
 			await userEvent.hover(button);
@@ -425,10 +444,7 @@ export const Disabled: Story = {
 			// Wait beyond the delay
 			await new Promise((resolve) => setTimeout(resolve, 200));
 
-			const tooltipTexts = canvas.queryAllByShadowText(/Disabled tooltip/u);
-			if (tooltipTexts.length > 0) {
-				expect(tooltipTexts[0]).not.toBeVisible();
-			}
+			expect(isOpen(button)).toBe(false);
 		});
 	},
 };
@@ -455,7 +471,7 @@ export const DisabledForAttribute: Story = {
 			/>
 		</div>
 	`,
-	play: async ({ canvas, step, userEvent }) => {
+	play: async ({ canvas, step }) => {
 		await step(
 			'Should NOT show tooltip on hover when disabled (for mode)',
 			async () => {
@@ -467,13 +483,217 @@ export const DisabledForAttribute: Story = {
 				// Wait beyond the delay
 				await new Promise((resolve) => setTimeout(resolve, 200));
 
-				const tooltipTexts =
-					canvas.queryAllByShadowText(/Disabled for tooltip/u);
-				if (tooltipTexts.length > 0) {
-					expect(tooltipTexts[0]).not.toBeVisible();
-				}
+				expect(isOpen(input)).toBe(false);
 			},
 		);
+	},
+};
+
+export const ForAttributePointerDown: Story = {
+	args: {
+		delay: 300,
+		heading: 'Press to dismiss',
+		description: 'Hidden while pressing',
+	},
+	render: (args) => html`
+		<div style="padding: 4rem; text-align: center;">
+			<cosmoz-tooltip
+				for="press-target"
+				heading=${args.heading}
+				description=${args.description}
+				placement=${args.placement}
+				delay=${args.delay}
+			></cosmoz-tooltip>
+			<input name="press-target" placeholder="Hover then press me" />
+		</div>
+	`,
+	play: async ({ canvas, step }) => {
+		// The for-mode popover is a light-DOM sibling of <cosmoz-tooltip>.
+		const isOpen = (input: Element) =>
+			input
+				.getRootNode()
+				.querySelector('.cosmoz-tooltip-popover')
+				?.matches(':popover-open') ?? false;
+
+		await step('Shows tooltip on hover', async () => {
+			const input = canvas.getByPlaceholderText('Hover then press me');
+			await userEvent.hover(input);
+			await waitFor(() => expect(isOpen(input)).toBe(true), { timeout: 1000 });
+		});
+
+		await step('Hides tooltip on press while visible', async () => {
+			const input = canvas.getByPlaceholderText('Hover then press me');
+			await userEvent.click(input);
+			await waitFor(() => expect(isOpen(input)).toBe(false), { timeout: 500 });
+		});
+
+		// The press left the pointer on the target; the input keeps focus.
+		// A tooltip that re-arms (focus or pointer) would be open within
+		// the 300ms delay, so close the window and assert once.
+		await step(
+			'Does not reappear while the pointer stays on the target',
+			async () => {
+				const input = canvas.getByPlaceholderText('Hover then press me');
+				await new Promise((resolve) => setTimeout(resolve, 500));
+				expect(isOpen(input)).toBe(false);
+			},
+		);
+	},
+};
+
+export const ForAttributeTouch: Story = {
+	args: {
+		delay: 0,
+		heading: 'Touch tooltip',
+		description: 'Never shows for touch pointers',
+	},
+	render: (args) => html`
+		<div style="padding: 4rem; text-align: center;">
+			<cosmoz-tooltip
+				for="touch-target"
+				heading=${args.heading}
+				description=${args.description}
+				placement=${args.placement}
+				delay=${args.delay}
+			></cosmoz-tooltip>
+			<input name="touch-target" placeholder="Tap me" data-testid="tap-input" />
+		</div>
+	`,
+	play: async ({ canvas, step }) => {
+		// The for-mode popover is a light-DOM sibling of <cosmoz-tooltip>.
+		const isOpen = (input: Element) =>
+			input
+				.getRootNode()
+				.querySelector('.cosmoz-tooltip-popover')
+				?.matches(':popover-open') ?? false;
+
+		await step('Shows tooltip for a mouse pointer', async () => {
+			const input = canvas.getByPlaceholderText('Tap me');
+			await userEvent.hover(input);
+			await waitFor(() => expect(isOpen(input)).toBe(true), { timeout: 1000 });
+			await userEvent.unhover(input);
+			await waitFor(() => expect(isOpen(input)).toBe(false), { timeout: 500 });
+		});
+
+		// A real tap exercises the whole touch path at once: the touch-pointer
+		// exclusion (no hover) and the focus a tap dispatches after pointerup,
+		// which lands outside the press-suppression window.
+		await step('Does not show tooltip for a real tap', async () => {
+			const input = canvas.getByPlaceholderText('Tap me');
+			await tap('[data-testid="tap-input"]');
+			await new Promise((resolve) => setTimeout(resolve, 300));
+			expect(isOpen(input)).toBe(false);
+		});
+	},
+};
+
+export const WrappingPointerDown: Story = {
+	args: {
+		delay: 300,
+		heading: 'Press to dismiss',
+		description: 'Hidden while pressing',
+	},
+	render: (args) => html`
+		<div style="padding: 4rem; text-align: center;">
+			<cosmoz-tooltip
+				heading=${args.heading}
+				description=${args.description}
+				placement=${args.placement}
+				delay=${args.delay}
+			>
+				<cosmoz-button>Hover then press me</cosmoz-button>
+			</cosmoz-tooltip>
+		</div>
+	`,
+	play: async ({ canvas, step }) => {
+		// The wrapping-mode popover lives in the tooltip's shadow root.
+		const isOpen = (trigger: Element) => {
+			const button = (trigger.getRootNode() as ShadowRoot).host as Element;
+			const tooltip = button?.closest?.('cosmoz-tooltip');
+			return (
+				tooltip?.shadowRoot
+					?.querySelector('.cosmoz-tooltip-popover')
+					?.matches(':popover-open') ?? false
+			);
+		};
+
+		await step('Shows tooltip on hover', async () => {
+			const button = canvas.getByShadowRole('button');
+			await userEvent.hover(button);
+			await waitFor(async () => expect(isOpen(button)).toBe(true), {
+				timeout: 1000,
+			});
+		});
+
+		await step('Hides tooltip on press while visible', async () => {
+			const button = canvas.getByShadowRole('button');
+			await userEvent.click(button);
+			await waitFor(async () => expect(isOpen(button)).toBe(false), {
+				timeout: 500,
+			});
+		});
+
+		await step('Does not reappear while the trigger keeps focus', async () => {
+			const button = canvas.getByShadowRole('button');
+			// The press left focus on the trigger; a tooltip that re-arms would
+			// be open within the 300ms delay, so close the window and assert once.
+			await new Promise((resolve) => setTimeout(resolve, 500));
+			expect(isOpen(button)).toBe(false);
+		});
+	},
+};
+
+export const WrappingTouch: Story = {
+	args: {
+		delay: 0,
+		heading: 'Touch tooltip',
+		description: 'Never shows for touch pointers',
+	},
+	render: (args) => html`
+		<div style="padding: 4rem; text-align: center;">
+			<cosmoz-tooltip
+				heading=${args.heading}
+				description=${args.description}
+				placement=${args.placement}
+				delay=${args.delay}
+			>
+				<cosmoz-button data-testid="tap-button">Tap me</cosmoz-button>
+			</cosmoz-tooltip>
+		</div>
+	`,
+	play: async ({ canvas, step }) => {
+		// The wrapping-mode popover lives in the tooltip's shadow root.
+		const isOpen = (trigger: Element) => {
+			const button = (trigger.getRootNode() as ShadowRoot).host as Element;
+			const tooltip = button?.closest?.('cosmoz-tooltip');
+			return (
+				tooltip?.shadowRoot
+					?.querySelector('.cosmoz-tooltip-popover')
+					?.matches(':popover-open') ?? false
+			);
+		};
+
+		await step('Shows tooltip for a mouse pointer', async () => {
+			const button = canvas.getByShadowRole('button');
+			await userEvent.hover(button);
+			await waitFor(async () => expect(isOpen(button)).toBe(true), {
+				timeout: 1000,
+			});
+			await userEvent.unhover(button);
+			await waitFor(async () => expect(isOpen(button)).toBe(false), {
+				timeout: 500,
+			});
+		});
+
+		// A real tap exercises the whole touch path at once: the touch-pointer
+		// exclusion (no hover) and the focus a tap dispatches after pointerup,
+		// which lands outside the press-suppression window.
+		await step('Does not show tooltip for a real tap', async () => {
+			const button = canvas.getByShadowRole('button');
+			await tap('[data-testid="tap-button"]');
+			await new Promise((resolve) => setTimeout(resolve, 300));
+			expect(isOpen(button)).toBe(false);
+		});
 	},
 };
 

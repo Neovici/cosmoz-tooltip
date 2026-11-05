@@ -1,9 +1,9 @@
-import { storybookTest } from "@storybook/addon-vitest/vitest-plugin";
-import { playwright } from "@vitest/browser-playwright";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import type { Frame } from "playwright-core";
-import { defineConfig } from "vitest/config";
+import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
+import { playwright } from '@vitest/browser-playwright';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import type { Frame } from 'playwright-core';
+import { defineConfig } from 'vitest/config';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -16,7 +16,7 @@ const dirname = path.dirname(fileURLToPath(import.meta.url));
  */
 const realTap = async (
 	{ frame }: { frame: () => Promise<Frame> },
-	selector: string
+	selector: string,
 ) => {
 	await (await frame()).locator(selector).tap();
 };
@@ -31,19 +31,19 @@ export default defineConfig({
 				extends: true,
 				plugins: [
 					storybookTest({
-						configDir: path.join(dirname, ".storybook"),
-						storybookScript: "npm run storybook:start -- --no-open",
+						configDir: path.join(dirname, '.storybook'),
+						storybookScript: 'npm run storybook:start -- --no-open',
 					}),
 				],
 				test: {
-					name: "storybook",
+					name: 'storybook',
 					browser: {
 						enabled: true,
 						provider: playwright({ contextOptions: { hasTouch: true } }),
 						headless: true,
-						instances: [{ browser: "chromium" }],
+						instances: [{ browser: 'chromium' }],
 					},
-					setupFiles: ["./.storybook/vitest.setup.ts"],
+					setupFiles: ['./.storybook/vitest.setup.ts'],
 				},
 			},
 		],

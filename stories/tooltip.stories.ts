@@ -97,7 +97,7 @@ export const Basic: Story = {
 						expect(elements[0]).not.toBeVisible();
 					}
 				},
-				{ timeout: 500 }
+				{ timeout: 500 },
 			);
 		});
 	},
@@ -326,7 +326,7 @@ export const FocusWithoutHover: Story = {
 				if (tooltipTexts.length > 0) {
 					expect(tooltipTexts[0]).not.toBeVisible();
 				}
-			}
+			},
 		);
 	},
 };
@@ -364,12 +364,12 @@ export const ForAttributeFocusWithoutHover: Story = {
 				await new Promise((resolve) => setTimeout(resolve, 200));
 
 				const tooltipTexts = canvas.queryAllByShadowText(
-					/For focus test tooltip/u
+					/For focus test tooltip/u,
 				);
 				if (tooltipTexts.length > 0) {
 					expect(tooltipTexts[0]).not.toBeVisible();
 				}
-			}
+			},
 		);
 	},
 };
@@ -472,7 +472,7 @@ export const DisabledForAttribute: Story = {
 			'Should NOT show tooltip on hover when disabled (for mode)',
 			async () => {
 				const input = canvas.getByPlaceholderText(
-					'Hover me (disabled for tooltip)'
+					'Hover me (disabled for tooltip)',
 				);
 				await userEvent.hover(input);
 
@@ -484,7 +484,7 @@ export const DisabledForAttribute: Story = {
 				if (tooltipTexts.length > 0) {
 					expect(tooltipTexts[0]).not.toBeVisible();
 				}
-			}
+			},
 		);
 	},
 };
@@ -536,7 +536,7 @@ export const ForAttributePointerDown: Story = {
 				const input = canvas.getByPlaceholderText('Hover then press me');
 				await new Promise((resolve) => setTimeout(resolve, 500));
 				expect(isOpen(input)).toBe(false);
-			}
+			},
 		);
 	},
 };

@@ -1,5 +1,11 @@
 ## [1.3.0](https://github.com/Neovici/cosmoz-tooltip/compare/v1.2.2...v1.3.0) (2026-05-12)
 
+## 1.5.0
+
+### Minor Changes
+
+- 3da6df3: Hide the tooltip while the trigger is pressed (also cancels pending show timers) and never show it for touch pointers. Pressing stays suppressed until the pointer is released, so tooltips do not pop up during drags, e.g. on `cosmoz-resize-handle`. Applies to both wrapping and `for=""` modes.
+
 ## 1.4.0
 
 ### Minor Changes

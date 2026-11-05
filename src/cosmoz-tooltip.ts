@@ -52,8 +52,8 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 	const hasContent = !!(heading || description || hasSlottedContent);
 	const shouldRenderTooltip = hasContent && !disabled;
 
-	// Wrapping mode: the tooltip reacts to hover and focus of the host; the
-	// popover is rendered by the template and opened by the gesture factory.
+	// Wrapping mode: hover, press and focus rules live in the shared gesture
+	// factory; the popover is rendered by the template below and opened here.
 	useEffect(() => {
 		if (forAttr || !shouldRenderTooltip) return;
 		const root = host.getRootNode() as Document | ShadowRoot;

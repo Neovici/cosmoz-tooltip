@@ -14,7 +14,7 @@ npm install @neovici/cosmoz-tooltip
 
 ```html
 <script type="module">
-	import '@neovici/cosmoz-tooltip';
+	import "@neovici/cosmoz-tooltip";
 </script>
 
 <cosmoz-tooltip heading="Help" description="Click to submit the form">
@@ -76,6 +76,8 @@ Target elements by their `name` attribute within the same document/shadow root:
 - **Smooth animations** — uses `@starting-style` and `allow-discrete` transitions
 - **Non-blocking** — `pointer-events: none` ensures tooltips never block interactions
 - **Keyboard accessible** — shows on focus, hides on blur
+- **Press to dismiss** — hides the tooltip (and cancels pending ones) while the trigger is pressed, so drags never show it mid-gesture; it reappears on re-enter
+- **No touch tooltips** — touch pointers never trigger a tooltip
 
 ## Design decisions
 

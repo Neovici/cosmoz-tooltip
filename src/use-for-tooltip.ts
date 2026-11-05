@@ -73,6 +73,9 @@ export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {
 		popoverEl.setAttribute('popover', 'manual');
 		popoverEl.setAttribute('role', 'tooltip');
 		popoverEl.classList.add('cosmoz-tooltip-popover');
+		// Names the popover after the trigger it serves, so tests (and
+		// consumers) can address it among sibling popovers.
+		popoverEl.setAttribute('data-for', forAttr);
 		// Insert after host to keep it in the same container scope
 		host.after(popoverEl);
 		renderContent(popoverEl, heading, description);

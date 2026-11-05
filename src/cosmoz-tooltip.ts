@@ -1,10 +1,11 @@
 import { normalize } from '@neovici/cosmoz-tokens/normalize';
-import { component, css, useCallback, useEffect, useRef } from '@pionjs/pion';
+import { component, css, useEffect, useRef } from '@pionjs/pion';
 import { html, nothing } from 'lit-html';
 import { ref } from 'lit-html/directives/ref.js';
 import { when } from 'lit-html/directives/when.js';
 import './cosmoz-tooltip-content.js';
 import { popoverStyle } from './popover-style.js';
+import { createGestureTooltips } from './tooltip-gestures';
 import { useForTooltip } from './use-for-tooltip.js';
 import { useHasSlottedContent } from './use-has-slotted-content.js';
 
@@ -46,52 +47,36 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 		delay = 300,
 		disabled = false,
 	} = host;
-	const popover = useRef<HTMLElement>();
-	const timeoutId = useRef<number>();
 	const contentSlotRef = useRef<HTMLSlotElement>();
 	const hasSlottedContent = useHasSlottedContent(contentSlotRef);
 	const hasContent = !!(heading || description || hasSlottedContent);
 	const shouldRenderTooltip = hasContent && !disabled;
 
-	const show = useCallback(() => {
-		if (!shouldRenderTooltip) return;
-		clearTimeout(timeoutId.current);
-		timeoutId.current = window.setTimeout(() => {
-			popover.current?.showPopover();
-		}, delay);
-	}, [delay, shouldRenderTooltip]);
-
-	// Immediately hide if disabled while visible
+	// Wrapping mode: the tooltip reacts to hover and focus of the host; the
+	// popover is rendered by the template and opened by the gesture factory.
 	useEffect(() => {
-		if (!disabled) return;
-		clearTimeout(timeoutId.current);
-		popover.current?.hidePopover();
-	}, [disabled]);
+		if (forAttr || !shouldRenderTooltip) return;
+		const root = host.getRootNode() as Document | ShadowRoot;
+		const popover = host.shadowRoot?.querySelector<HTMLElement>(
+			'.cosmoz-tooltip-popover'
+		);
+		if (!popover) return;
 
-	const hide = useCallback(() => {
-		clearTimeout(timeoutId.current);
-		popover.current?.hidePopover();
-	}, []);
-
-	// Use pointerover/pointerout on the host — they bubble through shadow DOM,
-	// unlike pointerenter/pointerleave on <slot>.
-	useEffect(() => {
-		if (forAttr) return;
-
-		const onPointerOut = (e: PointerEvent) => {
-			const related = e.relatedTarget as Element | null;
-			if (related && host.contains(related)) return;
-			hide();
-		};
-
-		host.addEventListener('pointerover', show);
-		host.addEventListener('pointerout', onPointerOut as EventListener);
-
+		const gestures = createGestureTooltips({
+			root,
+			delay,
+			matchTarget: (event) => {
+				const target = event.target as Node;
+				return target === host || host.contains(target) ? host : undefined;
+			},
+			show: () => popover.showPopover(),
+			hide: () => popover.hidePopover(),
+		});
 		return () => {
-			host.removeEventListener('pointerover', show);
-			host.removeEventListener('pointerout', onPointerOut as EventListener);
+			gestures.dispose();
+			popover.hidePopover();
 		};
-	}, [forAttr, show, hide]);
+	}, [forAttr, shouldRenderTooltip, delay]);
 
 	// Delegate for="" mode to hook
 	useForTooltip(host, {
@@ -116,19 +101,18 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 
 	// Wrapping mode: render slot + popover in shadow DOM
 	return html`
-		<slot @focusin=${show} @focusout=${hide}></slot>
+		<slot></slot>
 		<div
 			class="cosmoz-tooltip-popover"
 			popover="manual"
 			role="tooltip"
 			style="position-area: ${placement}"
-			${ref(popover)}
 		>
 			<cosmoz-tooltip-content>
 				${when(heading, () => html`<strong slot="heading">${heading}</strong>`)}
 				${when(
 					description,
-					() => html`<p slot="description">${description}</p>`,
+					() => html`<p slot="description">${description}</p>`
 				)}
 				<slot name="content" ${ref(contentSlotRef)}></slot>
 			</cosmoz-tooltip-content>
@@ -148,7 +132,7 @@ customElements.define(
 			'delay',
 			'disabled',
 		],
-	}),
+	})
 );
 
 export { CosmozTooltip };

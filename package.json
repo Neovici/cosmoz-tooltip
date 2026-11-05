@@ -71,6 +71,7 @@
     "http-server": "^14.1.1",
     "husky": "^9.0.0",
     "lint-staged": "^16.2.7",
+    "prettier": "^3.9.10",
     "shadow-dom-testing-library": "^1.13.1",
     "sinon": "^19.0.0",
     "storybook": "^10.0.0",

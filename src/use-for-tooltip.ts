@@ -35,14 +35,14 @@ interface ForTooltipOptions {
 const renderContent = (
 	popoverEl: HTMLElement,
 	heading?: string,
-	description?: string
+	description?: string,
 ) =>
 	render(
 		html`<cosmoz-tooltip-content>
 			${when(heading, () => html`<strong slot="heading">${heading}</strong>`)}
 			${when(description, () => html`<p slot="description">${description}</p>`)}
 		</cosmoz-tooltip-content>`,
-		popoverEl
+		popoverEl,
 	);
 
 export const useForTooltip = (host: HTMLElement, opts: ForTooltipOptions) => {

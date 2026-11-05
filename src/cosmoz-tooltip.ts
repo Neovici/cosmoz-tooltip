@@ -58,7 +58,7 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 		if (forAttr || !shouldRenderTooltip) return;
 		const root = host.getRootNode() as Document | ShadowRoot;
 		const popover = host.shadowRoot?.querySelector<HTMLElement>(
-			'.cosmoz-tooltip-popover'
+			'.cosmoz-tooltip-popover',
 		);
 		if (!popover) return;
 
@@ -112,7 +112,7 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 				${when(heading, () => html`<strong slot="heading">${heading}</strong>`)}
 				${when(
 					description,
-					() => html`<p slot="description">${description}</p>`
+					() => html`<p slot="description">${description}</p>`,
 				)}
 				<slot name="content" ${ref(contentSlotRef)}></slot>
 			</cosmoz-tooltip-content>
@@ -132,7 +132,7 @@ customElements.define(
 			'delay',
 			'disabled',
 		],
-	})
+	}),
 );
 
 export { CosmozTooltip };

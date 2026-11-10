@@ -285,6 +285,13 @@ export const CustomContent: Story = {
 			</cosmoz-tooltip>
 		</div>
 	`,
+	play: async ({ canvas, step }) => {
+		await step('Shows slotted content on hover', async () => {
+			const button = canvas.getByShadowRole('button');
+			await userEvent.hover(button);
+			await waitFor(() => expect(isOpen(button)).toBe(true), { timeout: 1000 });
+		});
+	},
 };
 
 export const OnLinks: Story = {

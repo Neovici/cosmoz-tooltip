@@ -57,10 +57,9 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 	useEffect(() => {
 		if (forAttr || !shouldRenderTooltip) return;
 		const root = host.getRootNode() as Document | ShadowRoot;
-		const popover = host.shadowRoot?.querySelector<HTMLElement>(
-			'.cosmoz-tooltip-popover',
-		);
-		if (!popover) return;
+		// Looked up on use: with only slotted content, the popover renders after this effect runs.
+		const popover = () =>
+			host.shadowRoot?.querySelector<HTMLElement>('.cosmoz-tooltip-popover');
 
 		const gestures = createGestureTooltips({
 			root,
@@ -69,12 +68,12 @@ const CosmozTooltip = (host: HTMLElement & TooltipProps) => {
 				const target = event.target as Node;
 				return target === host || host.contains(target) ? host : undefined;
 			},
-			show: () => popover.showPopover(),
-			hide: () => popover.hidePopover(),
+			show: () => popover()?.showPopover(),
+			hide: () => popover()?.hidePopover(),
 		});
 		return () => {
 			gestures.dispose();
-			popover.hidePopover();
+			popover()?.hidePopover();
 		};
 	}, [forAttr, shouldRenderTooltip, delay]);
 
